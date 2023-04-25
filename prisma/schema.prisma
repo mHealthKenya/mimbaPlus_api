@@ -140,4 +140,4 @@ model CHVTargets {
   updatedAt DateTime @updatedAt
 }
 
-//TODO ask to create a table to record clinical visits.
+//TODO ask to create a table to record clinical visits
