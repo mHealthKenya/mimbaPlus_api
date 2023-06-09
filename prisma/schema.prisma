@@ -18,8 +18,8 @@ model User {
   locationsCoveredId     String
   gender                 String
   email                  String?            @unique
-  phone_number           String
-  national_id            String?
+  phone_number           String             @unique
+  national_id            String?            @unique
   password               String
   role                   String             @default("Mother")
   createdAt              DateTime           @default(now())

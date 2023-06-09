@@ -7,9 +7,10 @@ import * as bcrypt from 'bcryptjs';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { ManageMentCreatedEvent } from './events/management-created.event';
 import { SendEmail } from '../helpers/send-email';
+import { LoginManagementDto } from './dto/login-management.dto';
+import * as jwt from 'jsonwebtoken';
 
 export enum Roles {
-  SUPER_ADMIN = 'SuperAdmin',
   ADMIN = 'Admin',
   FACILITY = 'Facility',
   CHV = 'CHV',
@@ -57,6 +58,43 @@ export class UsersService {
       });
 
     return newUser;
+  }
+
+  async loginManagement(credentials: LoginManagementDto) {
+    const { email, password } = credentials;
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid email or password');
+    }
+
+    const isValid = bcrypt.compareSync(password, user.password);
+
+    if (!isValid) {
+      throw new BadRequestException('Invalid email or password');
+    }
+
+    const token = await jwt.sign(
+      {
+        email: user.email,
+        id: user.id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '1d',
+      },
+    );
+
+    return {
+      message: 'User logged in successfully',
+      token,
+    };
   }
 
   @OnEvent('management.created')
