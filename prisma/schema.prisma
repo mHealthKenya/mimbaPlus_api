@@ -35,7 +35,7 @@ model User {
 
 model LocationsCovered {
   id            String   @id @default(cuid())
-  location_name String
+  location_name String   @unique
   User          User[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

@@ -1,4 +1,10 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { CreateUserDto } from './create-user.dto';
 import { Roles } from '../users.service';
 
@@ -14,4 +20,8 @@ export class CreateManagementDto extends CreateUserDto {
   @IsNotEmpty()
   @IsEnum(Roles)
   role: string;
+
+  @IsOptional()
+  @IsString()
+  password?: string;
 }

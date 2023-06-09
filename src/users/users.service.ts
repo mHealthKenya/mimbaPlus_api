@@ -31,7 +31,11 @@ export class UsersService {
   async createManagement(createMgt: CreateManagementDto) {
     let pass = uuidv4();
 
-    pass = pass.split('-')[0];
+    if (createMgt?.password) {
+      pass = createMgt.password;
+    } else {
+      pass = pass.split('-')[0];
+    }
 
     const password = bcrypt.hashSync(pass, 10);
 
