@@ -15,9 +15,9 @@ export class CustomErrorFilter implements ExceptionFilter {
 
     const status = error.status || HttpStatus.INTERNAL_SERVER_ERROR;
     const message =
-      error.response.message || error.message || 'Internal server error';
+      error?.response?.message || error?.message || 'Internal server error';
 
-    switch (error.response.code) {
+    switch (error?.response?.code) {
       case 'P2002':
         response.status(status).json({
           statusCode: status,

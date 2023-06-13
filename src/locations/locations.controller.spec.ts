@@ -3,6 +3,7 @@ import { LocationsController } from './locations.controller';
 import { LocationsService } from './locations.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLocationDto } from './dto/create-location.dto';
+import { UserHelper } from '../helpers/user-helper';
 
 describe('LocationsController', () => {
   const service = {
@@ -27,7 +28,7 @@ describe('LocationsController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [LocationsController],
-      providers: [LocationsService, PrismaService],
+      providers: [LocationsService, PrismaService, UserHelper],
     })
       .overrideProvider(LocationsService)
       .useValue(service)
