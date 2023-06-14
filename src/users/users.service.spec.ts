@@ -110,6 +110,5 @@ describe('UsersService', () => {
         l_name: 'Updated',
       },
     });
-    console.log(updateUser);
   });
 });

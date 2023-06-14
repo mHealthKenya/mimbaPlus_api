@@ -1,20 +1,19 @@
-import { emailBody } from './../helpers/management-created-email';
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateManagementDto } from './dto/create-management.dto';
-import * as bcrypt from 'bcryptjs';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { ManageMentCreatedEvent } from './events/management-created.event';
-import { SendEmail } from '../helpers/send-email';
-import { LoginManagementDto } from './dto/login-management.dto';
+import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
+import { SendEmail } from '../helpers/send-email';
+import { PrismaService } from '../prisma/prisma.service';
+import { emailBody } from './../helpers/management-created-email';
+import { CreateManagementDto } from './dto/create-management.dto';
+import { LoginManagementDto } from './dto/login-management.dto';
 import { UpdateManagementDto } from './dto/update-management.dto';
+import { ManageMentCreatedEvent } from './events/management-created.event';
 
 export enum Roles {
   ADMIN = 'Admin',
@@ -117,10 +116,6 @@ export class UsersService {
 
     if (!user) {
       throw new NotFoundException('Invalid user ID');
-    }
-
-    if (user.role === 'SuperAdmin') {
-      throw new ForbiddenException('Action denied');
     }
 
     return await this.prisma.user
