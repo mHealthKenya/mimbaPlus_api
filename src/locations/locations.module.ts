@@ -22,6 +22,10 @@ export class LocationsModule implements NestModule {
         path: '/locations/all',
         method: RequestMethod.GET,
       })
+      .exclude({
+        path: '/locations/coordinates',
+        method: RequestMethod.GET,
+      })
       .forRoutes(LocationsController);
   }
 }

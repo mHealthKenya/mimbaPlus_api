@@ -14,7 +14,7 @@ model User {
   id                     String             @id @default(cuid())
   f_name                 String
   l_name                 String
-  location               LocationsCovered   @relation(fields: [locationsCoveredId], references: [id], onDelete: Cascade)
+  location               LocationsCovered   @relation(fields: [locationsCoveredId], references: [id])
   locationsCoveredId     String
   gender                 String
   email                  String?            @unique
@@ -138,7 +138,7 @@ model LocationCoordinates {
   lat                Float
   lng                Float
   location           LocationsCovered @relation(fields: [locationsCoveredId], references: [id], onDelete: Cascade)
-  locationsCoveredId String
+  locationsCoveredId String           @unique
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
 }
