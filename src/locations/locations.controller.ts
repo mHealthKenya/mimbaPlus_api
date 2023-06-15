@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { UserRoles } from '../decorators/roles/roles.decorator';
+import { RolesGuard } from '../guards/roles/roles.guard';
+import { Roles } from '../users/users.service';
 import { CreateLocationDto } from './dto/create-location.dto';
 import { LocationsService } from './locations.service';
-import { RolesGuard } from '../guards/roles/roles.guard';
-import { UserRoles } from '../decorators/roles/roles.decorator';
-import { Roles } from '../users/users.service';
 
 @Controller('locations')
 export class LocationsController {
@@ -19,5 +19,10 @@ export class LocationsController {
   @Get('all')
   findAll() {
     return this.locationsService.findAll();
+  }
+
+  @Get('coordinates')
+  getCoordinates() {
+    return this.locationsService.getCoordinates();
   }
 }

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { LocationsService } from './locations.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLocationDto } from './dto/create-location.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 describe('LocationsService', () => {
   let service: LocationsService;
@@ -23,11 +24,24 @@ describe('LocationsService', () => {
         },
       ]),
     },
+
+    locationCoordinates: {
+      findMany: jest.fn().mockImplementation(async () => [
+        {
+          id: 'sampleId',
+          lat: -1.45,
+          lng: 35,
+          locationsCoveredId: 'locationId',
+          createdAt: '2023-06-15T10:08:27.441Z',
+          updatedAt: '2023-06-15T10:08:27.441Z',
+        },
+      ]),
+    },
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [LocationsService, PrismaService],
+      providers: [LocationsService, PrismaService, EventEmitter2],
     })
       .overrideProvider(PrismaService)
       .useValue(prisma)
@@ -63,5 +77,10 @@ describe('LocationsService', () => {
     const allLocations = await service.findAll();
     expect(allLocations.length).toEqual(1);
     expect(prisma.locationsCovered.findMany).toHaveBeenCalled();
+  });
+
+  it('should find coordinates', async () => {
+    const coordinates = await service.getCoordinates();
+    expect(coordinates.length).toEqual(1);
   });
 });
