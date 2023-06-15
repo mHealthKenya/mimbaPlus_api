@@ -18,14 +18,16 @@ export class LocationsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
-      .exclude({
-        path: '/locations/all',
-        method: RequestMethod.GET,
-      })
-      .exclude({
-        path: '/locations/coordinates',
-        method: RequestMethod.GET,
-      })
+      .exclude(
+        {
+          path: '/locations/all',
+          method: RequestMethod.GET,
+        },
+        {
+          path: '/locations/coordinates',
+          method: RequestMethod.GET,
+        },
+      )
       .forRoutes(LocationsController);
   }
 }
