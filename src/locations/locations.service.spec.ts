@@ -3,6 +3,7 @@ import { LocationsService } from './locations.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLocationDto } from './dto/create-location.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UpdateLocationDto } from './dto/update-location.dto';
 
 describe('LocationsService', () => {
   let service: LocationsService;
@@ -23,6 +24,17 @@ describe('LocationsService', () => {
           updatedAt: new Date(),
         },
       ]),
+
+      update: jest.fn().mockImplementation(async () => ({
+        id: '12345678',
+        location_name: 'sample',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })),
+
+      delete: jest.fn().mockImplementation(async () => ({
+        message: 'Location deleted',
+      })),
     },
 
     locationCoordinates: {
@@ -82,5 +94,43 @@ describe('LocationsService', () => {
   it('should find coordinates', async () => {
     const coordinates = await service.getCoordinates();
     expect(coordinates.length).toEqual(1);
+  });
+
+  it('should update a location', async () => {
+    const location: UpdateLocationDto = {
+      location_name: 'sample',
+      id: '12345678',
+    };
+
+    const updatedLocation = await service.updateLocationFn(location);
+
+    expect(updatedLocation).toEqual({
+      id: '12345678',
+      location_name: 'sample',
+      createdAt: expect.any(Date),
+      updatedAt: expect.any(Date),
+    });
+
+    expect(prisma.locationsCovered.update).toHaveBeenCalledWith({
+      where: {
+        id: '12345678',
+      },
+      data: {
+        location_name: location.location_name,
+      },
+    });
+  });
+
+  it('should delete a location', async () => {
+    const id = '12345678';
+    const del = await service.deleteLocation(id);
+    expect(del).toEqual({
+      message: 'Location deleted',
+    });
+    expect(prisma.locationsCovered.delete).toHaveBeenCalledWith({
+      where: {
+        id,
+      },
+    });
   });
 });

@@ -4,6 +4,7 @@ import { LocationsService } from './locations.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLocationDto } from './dto/create-location.dto';
 import { UserHelper } from '../helpers/user-helper';
+import { UpdateLocationDto } from './dto/update-location.dto';
 
 describe('LocationsController', () => {
   const service = {
@@ -22,6 +23,17 @@ describe('LocationsController', () => {
         updatedAt: new Date(),
       },
     ]),
+
+    updateLocationFn: jest.fn().mockImplementation(async () => ({
+      id: '12345678',
+      location_name: 'sample',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })),
+
+    deleteLocation: jest.fn().mockImplementation(async () => ({
+      message: 'Location deleted',
+    })),
   };
   let controller: LocationsController;
 
@@ -70,5 +82,34 @@ describe('LocationsController', () => {
     ]);
 
     expect(service.findAll).toHaveBeenCalled();
+  });
+
+  it('should update a location', async () => {
+    const location: UpdateLocationDto = {
+      location_name: 'sample',
+      id: '12345678',
+    };
+    const updatedLoc = await controller.updateLocation(location);
+
+    expect(updatedLoc).toEqual({
+      id: '12345678',
+      location_name: 'sample',
+      createdAt: expect.any(Date),
+      updatedAt: expect.any(Date),
+    });
+
+    expect(service.updateLocationFn).toHaveBeenCalledWith(location);
+  });
+
+  it('should delete a location', async () => {
+    const id = '123456778';
+
+    const del = await controller.deleteLocation({ id });
+
+    expect(del).toEqual({
+      message: 'Location deleted',
+    });
+
+    expect(service.deleteLocation).toHaveBeenCalledWith(id);
   });
 });
