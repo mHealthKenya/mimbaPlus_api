@@ -1,5 +1,4 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { UserHelper } from '../../helpers/user-helper';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -7,7 +6,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class LevelGuard implements CanActivate {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly reflector: Reflector,
     private readonly userHelper: UserHelper,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {

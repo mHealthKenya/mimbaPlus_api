@@ -1,10 +1,16 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateLocationDto } from './dto/create-location.dto';
+import axios from 'axios';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { LocationCreatedEvent } from './events/location-created.event';
 
 @Injectable()
 export class LocationsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
   async create(createLocationDto: CreateLocationDto) {
     const newLocation = await this.prisma.locationsCovered
       .create({
@@ -12,7 +18,14 @@ export class LocationsService {
           ...createLocationDto,
         },
       })
-      .then((data) => data)
+      .then((data) => {
+        const { location_name, id } = data;
+        this.eventEmitter.emit(
+          'location.created',
+          new LocationCreatedEvent(location_name, id),
+        );
+        return data;
+      })
       .catch((err) => {
         throw new BadRequestException(err);
       });
@@ -33,15 +46,49 @@ export class LocationsService {
     return allLocations;
   }
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} location`;
-  // }
+  async getAddressCoordinates(address: string, id: string) {
+    const GOOGLE_MAPS_KEY = process.env.GOOGLE_MAPS_KEY;
+    const encodedAddress = encodeURIComponent(address);
 
-  // update(id: number, updateLocationDto: UpdateLocationDto) {
-  //   return `This action updates a #${id} location`;
-  // }
+    try {
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${GOOGLE_MAPS_KEY}`,
+      );
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} location`;
-  // }
+      const { results } = response.data;
+
+      if (results.length > 0) {
+        const { lat, lng } = results[0].geometry.location;
+
+        return await this.prisma.locationCoordinates.create({
+          data: {
+            lat,
+            lng,
+            locationsCoveredId: id,
+          },
+        });
+      }
+
+      return results;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async getCoordinates() {
+    const coordinates = await this.prisma.locationCoordinates
+      .findMany()
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return coordinates;
+  }
+
+  @OnEvent('location.created')
+  async handleLocationCreated(data: LocationCreatedEvent) {
+    const { location_name, id } = data;
+    return this.getAddressCoordinates(location_name, id);
+  }
 }
