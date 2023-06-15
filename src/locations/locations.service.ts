@@ -21,7 +21,11 @@ export class LocationsService {
 
   async findAll() {
     const allLocations = await this.prisma.locationsCovered
-      .findMany()
+      .findMany({
+        orderBy: {
+          updatedAt: 'desc',
+        },
+      })
       .then((data) => data)
       .catch((err) => {
         throw new BadRequestException(err);
