@@ -7,6 +7,7 @@ import { CreateManagementDto } from './dto/create-management.dto';
 import { UpdateManagementDto } from './dto/update-management.dto';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
+import { GetUserByRole } from './dto/get-user-by-role.dto';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -46,6 +47,23 @@ describe('UsersController', () => {
         updatedAt: new Date(),
       },
     })),
+
+    getUsersByRole: jest.fn().mockImplementation(async () => [
+      {
+        id: 'sampleId',
+        f_name: 'User',
+        l_name: 'Updated',
+        locationsCoveredId: 'sampleLocation',
+        gender: 'Male',
+        email: 'sample@user.com',
+        phone_number: '254123456789',
+        national_id: '12345678',
+        password: 'hashed',
+        role: 'Role',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]),
   };
 
   const newUserDto: CreateManagementDto = {
@@ -97,5 +115,16 @@ describe('UsersController', () => {
     expect(updateUser.message).toEqual('User updated successfully');
 
     expect(usersService.updateUser).toHaveBeenCalledWith(user);
+  });
+
+  it('should get users by role', async () => {
+    const data: GetUserByRole = {
+      role: 'Role',
+    };
+    const users = await controller.getUsersByRole(data);
+
+    expect(users.length).toEqual(1);
+
+    expect(usersService.getUsersByRole).toHaveBeenCalledWith(data);
   });
 });

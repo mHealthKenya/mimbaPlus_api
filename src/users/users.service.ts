@@ -14,6 +14,7 @@ import { CreateManagementDto } from './dto/create-management.dto';
 import { LoginManagementDto } from './dto/login-management.dto';
 import { UpdateManagementDto } from './dto/update-management.dto';
 import { ManageMentCreatedEvent } from './events/management-created.event';
+import { GetUserByRole } from './dto/get-user-by-role.dto';
 
 export enum Roles {
   ADMIN = 'Admin',
@@ -134,6 +135,23 @@ export class UsersService {
       .catch((err) => {
         throw new BadRequestException(err);
       });
+  }
+
+  async getUsersByRole(data: GetUserByRole) {
+    const { role } = data;
+
+    const users = await this.prisma.user
+      .findMany({
+        where: {
+          role,
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return users;
   }
 
   @OnEvent('management.created')
