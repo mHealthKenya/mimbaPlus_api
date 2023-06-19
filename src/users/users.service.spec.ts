@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateManagementDto } from './dto/create-management.dto';
 import { UsersService } from './users.service';
 import { UpdateManagementDto } from './dto/update-management.dto';
+import { GetUserByRole } from './dto/get-user-by-role.dto';
 
 describe('UsersService', () => {
   const prismaService = {
@@ -52,6 +53,23 @@ describe('UsersService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       })),
+
+      findMany: jest.fn().mockImplementation(async () => [
+        {
+          id: 'sampleId',
+          f_name: 'User',
+          l_name: 'Updated',
+          locationsCoveredId: 'sampleLocation',
+          gender: 'Male',
+          email: 'sample@user.com',
+          phone_number: '254123456789',
+          national_id: '12345678',
+          password: 'hashed',
+          role: 'Role',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ]),
     },
   };
   const newUserDto: CreateManagementDto = {
@@ -108,6 +126,22 @@ describe('UsersService', () => {
       data: {
         id: 'sampleId',
         l_name: 'Updated',
+      },
+    });
+  });
+
+  it('should find users by roles', async () => {
+    const data: GetUserByRole = {
+      role: 'Role',
+    };
+
+    const users = await service.getUsersByRole(data);
+
+    expect(users.length).toEqual(1);
+
+    expect(prismaService.user.findMany).toHaveBeenCalledWith({
+      where: {
+        role: 'Role',
       },
     });
   });
