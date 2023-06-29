@@ -7,14 +7,14 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { CreateManagementDto } from './dto/create-management.dto';
-import { Roles, UsersService } from './users.service';
-import { LoginManagementDto } from './dto/login-management.dto';
-import { RolesGuard } from '../guards/roles/roles.guard';
 import { UserRoles } from '../decorators/roles/roles.decorator';
-import { UpdateManagementDto } from './dto/update-management.dto';
 import { LevelGuard } from '../guards/level/level.guard';
+import { RolesGuard } from '../guards/roles/roles.guard';
+import { CreateUserDto } from './dto/create-user.dto';
 import { GetUserByRole } from './dto/get-user-by-role.dto';
+import { LoginManagementDto } from './dto/login-management.dto';
+import { Roles, UsersService } from './users.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -22,9 +22,9 @@ export class UsersController {
 
   @UseGuards(RolesGuard)
   @UserRoles(Roles.ADMIN)
-  @Post('management')
-  async createManagement(@Body() createManagement: CreateManagementDto) {
-    return this.usersService.createManagement(createManagement);
+  @Post('add')
+  async createUser(@Body() createUser: CreateUserDto) {
+    return this.usersService.createUser(createUser);
   }
 
   @Post('login')
@@ -34,7 +34,7 @@ export class UsersController {
 
   @UseGuards(LevelGuard)
   @Patch('update')
-  async updateManagement(@Body() data: UpdateManagementDto) {
+  async updateManagement(@Body() data: UpdateUserDto) {
     return this.usersService.updateUser(data);
   }
 

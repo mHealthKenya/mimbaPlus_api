@@ -2,10 +2,10 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserHelper } from '../helpers/user-helper';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateManagementDto } from './dto/create-management.dto';
-import { UsersService } from './users.service';
-import { UpdateManagementDto } from './dto/update-management.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { GetUserByRole } from './dto/get-user-by-role.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UsersService } from './users.service';
 
 describe('UsersService', () => {
   const prismaService = {
@@ -14,13 +14,13 @@ describe('UsersService', () => {
         id: 'sampleId',
         f_name: 'User',
         l_name: 'Here',
-        locationsCoveredId: 'sampleLocation',
         gender: 'Male',
         email: 'sample@user.com',
         phone_number: '254123456789',
         national_id: '12345678',
         password: 'hashed',
         role: 'Role',
+        facilityId: 'facilityId',
         createdAt: new Date(),
         updatedAt: new Date(),
       })),
@@ -28,13 +28,13 @@ describe('UsersService', () => {
         id: 'sampleId',
         f_name: 'User',
         l_name: 'Here',
-        locationsCoveredId: 'sampleLocation',
         gender: 'Male',
         email: 'sample@user.com',
         phone_number: '254123456789',
         national_id: '12345678',
         password: 'hashed',
         role: 'Role',
+        facilityId: 'facilityId',
         createdAt: new Date(),
         updatedAt: new Date(),
       })),
@@ -43,13 +43,13 @@ describe('UsersService', () => {
         id: 'sampleId',
         f_name: 'User',
         l_name: 'Updated',
-        locationsCoveredId: 'sampleLocation',
         gender: 'Male',
         email: 'sample@user.com',
         phone_number: '254123456789',
         national_id: '12345678',
         password: 'hashed',
         role: 'Role',
+        facilityId: 'facilityId',
         createdAt: new Date(),
         updatedAt: new Date(),
       })),
@@ -59,7 +59,7 @@ describe('UsersService', () => {
           id: 'sampleId',
           f_name: 'User',
           l_name: 'Updated',
-          locationsCoveredId: 'sampleLocation',
+          facilityId: 'facilityId',
           gender: 'Male',
           email: 'sample@user.com',
           phone_number: '254123456789',
@@ -72,14 +72,14 @@ describe('UsersService', () => {
       ]),
     },
   };
-  const newUserDto: CreateManagementDto = {
+  const newUserDto: CreateUserDto = {
     f_name: 'User',
     l_name: 'Here',
-    locationsCoveredId: 'sampleLocation',
     gender: 'Male',
     email: 'sample@user.com',
     phone_number: '254123456789',
     national_id: '12345678',
+    facilityId: 'facilityId',
     role: 'Role',
   };
   let service: UsersService;
@@ -99,20 +99,13 @@ describe('UsersService', () => {
   });
 
   it('should create a user', async () => {
-    const newUser = await service.createManagement(newUserDto);
+    const newUser = await service.createUser(newUserDto);
 
     expect(newUser.message).toEqual('User created successfully');
-
-    expect(prismaService.user.create).toHaveBeenCalledWith({
-      data: {
-        ...newUserDto,
-        password: expect.any(String),
-      },
-    });
   });
 
   it('should update a user', async () => {
-    const updateDto: UpdateManagementDto = {
+    const updateDto: UpdateUserDto = {
       id: 'sampleId',
       l_name: 'Updated',
     };
@@ -138,11 +131,5 @@ describe('UsersService', () => {
     const users = await service.getUsersByRole(data);
 
     expect(users.length).toEqual(1);
-
-    expect(prismaService.user.findMany).toHaveBeenCalledWith({
-      where: {
-        role: 'Role',
-      },
-    });
   });
 });

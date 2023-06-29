@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class DeleteLocationDto {
+export class CreateFacilityDto {
   @IsNotEmpty()
   @IsString()
-  id: string;
+  name: string;
 }
