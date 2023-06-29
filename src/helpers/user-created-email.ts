@@ -1,6 +1,6 @@
-import { ManageMentCreatedEvent } from '../users/events/management-created.event';
+import { UserCreatedEvent } from '../users/events/user-created-event';
 
-export const emailBody = (data: ManageMentCreatedEvent) => `<!DOCTYPE html>
+export const emailBody = (data: UserCreatedEvent) => `<!DOCTYPE html>
 <html>
   <head>
     <meta charset="utf-8">
@@ -83,7 +83,7 @@ export const emailBody = (data: ManageMentCreatedEvent) => `<!DOCTYPE html>
                 <p>You have been successfully registered to M+! We're excited to have you on board and can't wait to work with you.</p>
                 <p>If you have any questions or need assistance getting started, don't hesitate to reach out to us. Our team is always happy to help.</p>
 
-                <p> Your auto generated password is ${data.message}. You can continue using this password or change it by clicking on the forgot password link in the login page</p>
+                <p> Your auto generated password is <i>${data.message}</i>. You can continue using this password or change it by clicking on the forgot password link in the login page</p>
                 
                 <p>Best regards,</p>
                 <p><b>World Friends</b> team</p>

@@ -8,13 +8,13 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import { SendEmail } from '../helpers/send-email';
+import { emailBody } from '../helpers/user-created-email';
 import { PrismaService } from '../prisma/prisma.service';
-import { emailBody } from './../helpers/management-created-email';
-import { CreateManagementDto } from './dto/create-management.dto';
-import { LoginManagementDto } from './dto/login-management.dto';
-import { UpdateManagementDto } from './dto/update-management.dto';
-import { ManageMentCreatedEvent } from './events/management-created.event';
+import { CreateUserDto } from './dto/create-user.dto';
 import { GetUserByRole } from './dto/get-user-by-role.dto';
+import { LoginManagementDto } from './dto/login-management.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserCreatedEvent } from './events/user-created-event';
 
 export enum Roles {
   ADMIN = 'Admin',
@@ -34,30 +34,26 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
-  async createManagement(createMgt: CreateManagementDto) {
-    let pass = uuidv4();
 
-    if (createMgt?.password) {
-      pass = createMgt.password;
-    } else {
-      pass = pass.split('-')[0];
-    }
+  async createUser(createUser: CreateUserDto) {
+    const id = uuidv4();
+    const pass = (Math.random() + 1).toString(36).substring(7);
 
     const password = bcrypt.hashSync(pass, 10);
 
     const newUser = await this.prisma.user
       .create({
         data: {
-          ...createMgt,
+          ...createUser,
+          id,
           password,
         },
       })
       .then((data) => {
         this.eventEmitter.emit(
-          'management.created',
-          new ManageMentCreatedEvent(data.email, pass),
+          'user.created',
+          new UserCreatedEvent(data.email, pass),
         );
-
         return {
           message: 'User created successfully',
           data,
@@ -101,13 +97,16 @@ export class UsersService {
       },
     );
 
+    delete user.password;
+
     return {
       message: 'User logged in successfully',
       token,
+      user,
     };
   }
 
-  async updateUser(data: UpdateManagementDto) {
+  async updateUser(data: UpdateUserDto) {
     const { id } = data;
     const user = await this.prisma.user.findUnique({
       where: {
@@ -145,6 +144,15 @@ export class UsersService {
         where: {
           role,
         },
+
+        include: {
+          Facility: {
+            select: {
+              name: true,
+              id: true,
+            },
+          },
+        },
       })
       .then((data) => data)
       .catch((err) => {
@@ -154,8 +162,8 @@ export class UsersService {
     return users;
   }
 
-  @OnEvent('management.created')
-  async handleManagementCreated(event: ManageMentCreatedEvent) {
+  @OnEvent('user.created')
+  async handleManagementCreated(event: UserCreatedEvent) {
     const { email } = event;
 
     const msg = emailBody(event);
@@ -163,7 +171,7 @@ export class UsersService {
     await new SendEmail(
       email,
       'Welcome to M+',
-      'Ypu have been added to the team',
+      'You have been added to the team',
       msg,
     ).send();
   }

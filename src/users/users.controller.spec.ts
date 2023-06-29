@@ -3,16 +3,16 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserHelper } from '../helpers/user-helper';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateManagementDto } from './dto/create-management.dto';
-import { UpdateManagementDto } from './dto/update-management.dto';
+import { GetUserByRole } from './dto/get-user-by-role.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { GetUserByRole } from './dto/get-user-by-role.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 
 describe('UsersController', () => {
   let controller: UsersController;
   const usersService = {
-    createManagement: jest.fn().mockImplementation(async () => ({
+    createUser: jest.fn().mockImplementation(async () => ({
       message: 'User created successfully',
       data: {
         id: 'sampleId',
@@ -66,15 +66,15 @@ describe('UsersController', () => {
     ]),
   };
 
-  const newUserDto: CreateManagementDto = {
+  const newUserDto: CreateUserDto = {
     f_name: 'User',
     l_name: 'Here',
-    locationsCoveredId: 'sampleLocation',
     gender: 'Male',
     email: 'sample@user.com',
     phone_number: '254123456789',
     national_id: '12345678',
-    role: 'Role',
+    role: 'Admin',
+    facilityId: 'sample',
   };
 
   beforeEach(async () => {
@@ -99,13 +99,13 @@ describe('UsersController', () => {
   });
 
   it('should create a user', async () => {
-    const newUser = await controller.createManagement(newUserDto);
+    const newUser = await controller.createUser(newUserDto);
     expect(newUser.message).toEqual('User created successfully');
-    expect(usersService.createManagement).toHaveBeenCalledWith(newUserDto);
+    expect(usersService.createUser).toHaveBeenCalledWith(newUserDto);
   });
 
   it('should update a user', async () => {
-    const user: UpdateManagementDto = {
+    const user: UpdateUserDto = {
       id: 'sampleId',
       l_name: 'Updated',
     };
