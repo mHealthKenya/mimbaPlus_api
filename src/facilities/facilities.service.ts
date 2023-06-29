@@ -86,7 +86,7 @@ export class FacilitiesService {
         },
       })
       .then((data) => ({
-        message: data.name + 'deleted successfully',
+        message: data.name + ' deleted successfully',
       }))
       .catch((err) => {
         throw new BadRequestException(err);

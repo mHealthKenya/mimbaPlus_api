@@ -52,7 +52,7 @@ model BioData {
   createdAt              DateTime @default(now())
   updatedAt              DateTime @updatedAt
 }
-
+//TODO Ask for details to be captured in registering a facility
 model Facility {
   id                  String                @id @default(cuid())
   name                String                @unique
