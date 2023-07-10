@@ -7,6 +7,7 @@ import { UserHelper } from '../helpers/user-helper';
 import { CreateFacilityDto } from './dto/create-facility.dto';
 import { UpdateFacilityDto } from './dto/update-facility.dto';
 import { DeleteFacilityDto } from './dto/delete-facility.dto';
+import { GetFacilityByIdDto } from './dto/get-facility.dto';
 
 const facilitiesService = {
   create: jest.fn().mockImplementation(async () => ({
@@ -39,6 +40,14 @@ const facilitiesService = {
   })),
 
   deleteFacility: jest.fn().mockImplementation(async () => ({
+    id: 'sampleid',
+    name: 'sample facility edit',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    status: 'Active',
+  })),
+
+  getFacilityById: jest.fn().mockImplementation(async () => ({
     id: 'sampleid',
     name: 'sample facility edit',
     createdAt: new Date(),
@@ -106,5 +115,19 @@ describe('FacilitiesController', () => {
     expect(facilitiesService.deleteFacility).toHaveBeenCalledWith(
       deleteUser.id,
     );
+  });
+
+  it('should find a facility by id', async () => {
+    const facilityDto: GetFacilityByIdDto = {
+      id: 'sampleid',
+    };
+
+    const facility = await controller.getFacilityById(facilityDto);
+
+    expect(facilitiesService.getFacilityById).toHaveBeenCalledWith(
+      facilityDto.id,
+    );
+
+    expect(facility.id).toEqual('sampleid');
   });
 });

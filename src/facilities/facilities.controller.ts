@@ -15,6 +15,7 @@ import { DeleteFacilityDto } from './dto/delete-facility.dto';
 import { RolesGuard } from '../guards/roles/roles.guard';
 import { UserRoles } from '../decorators/roles/roles.decorator';
 import { Roles } from '../users/users.service';
+import { GetFacilityByIdDto } from './dto/get-facility.dto';
 
 @Controller('facilities')
 export class FacilitiesController {
@@ -49,5 +50,10 @@ export class FacilitiesController {
   @Get('coordinates')
   getCoordinates() {
     return this.facilitiesService.getCoordinates();
+  }
+
+  @Get('facility')
+  getFacilityById(@Query() data: GetFacilityByIdDto) {
+    return this.facilitiesService.getFacilityById(data.id);
   }
 }

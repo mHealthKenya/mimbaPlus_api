@@ -6,6 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { GetUserByRole } from './dto/get-user-by-role.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersService } from './users.service';
+import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dto';
 
 describe('UsersService', () => {
   const prismaService = {
@@ -131,5 +132,48 @@ describe('UsersService', () => {
     const users = await service.getUsersByRole(data);
 
     expect(users.length).toEqual(1);
+  });
+
+  it('should find users by facilityId and role', async () => {
+    const data: GetUserByRoleAndFacility = {
+      facilityId: 'facilityId',
+      role: 'Role',
+    };
+
+    const users = await service.getUserByRoleAndFacility(data);
+
+    expect(prismaService.user.findMany).toHaveBeenCalledWith({
+      where: {
+        facilityId: 'facilityId',
+        role: 'Role',
+      },
+      include: {
+        Facility: {
+          select: {
+            name: true,
+            id: true,
+          },
+        },
+      },
+    });
+
+    expect(users.length).toEqual(1);
+  });
+
+  it('should find all users', async () => {
+    const allUsers = await service.getAllUsers();
+
+    expect(prismaService.user.findMany).toHaveBeenCalledWith({
+      include: {
+        Facility: {
+          select: {
+            name: true,
+            id: true,
+          },
+        },
+      },
+    });
+
+    expect(allUsers.length).toEqual(1);
   });
 });

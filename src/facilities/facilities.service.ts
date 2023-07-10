@@ -95,6 +95,21 @@ export class FacilitiesService {
     return del;
   }
 
+  async getFacilityById(id: string) {
+    const facility = await this.prisma.facility
+      .findUnique({
+        where: {
+          id,
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return facility;
+  }
+
   async getCoordinates() {
     const coordinates = await this.prisma.locationCoordinates
       .findMany()

@@ -15,6 +15,7 @@ import { GetUserByRole } from './dto/get-user-by-role.dto';
 import { LoginManagementDto } from './dto/login-management.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserCreatedEvent } from './events/user-created-event';
+import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dto';
 
 export enum Roles {
   ADMIN = 'Admin',
@@ -64,6 +65,26 @@ export class UsersService {
       });
 
     return newUser;
+  }
+
+  async getAllUsers() {
+    const allUsers = await this.prisma.user
+      .findMany({
+        include: {
+          Facility: {
+            select: {
+              name: true,
+              id: true,
+            },
+          },
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return allUsers;
   }
 
   async loginManagement(credentials: LoginManagementDto) {
@@ -142,6 +163,33 @@ export class UsersService {
     const users = await this.prisma.user
       .findMany({
         where: {
+          role,
+        },
+
+        include: {
+          Facility: {
+            select: {
+              name: true,
+              id: true,
+            },
+          },
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return users;
+  }
+
+  async getUserByRoleAndFacility(data: GetUserByRoleAndFacility) {
+    const { facilityId, role } = data;
+
+    const users = await this.prisma.user
+      .findMany({
+        where: {
+          facilityId,
           role,
         },
 
