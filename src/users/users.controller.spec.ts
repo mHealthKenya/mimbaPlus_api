@@ -8,6 +8,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dto';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -54,6 +55,40 @@ describe('UsersController', () => {
         f_name: 'User',
         l_name: 'Updated',
         locationsCoveredId: 'sampleLocation',
+        gender: 'Male',
+        email: 'sample@user.com',
+        phone_number: '254123456789',
+        national_id: '12345678',
+        password: 'hashed',
+        role: 'Role',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]),
+
+    getUserByRoleAndFacility: jest.fn().mockImplementation(async () => [
+      {
+        id: 'sampleId',
+        f_name: 'User',
+        l_name: 'Updated',
+        facilityId: 'facilityId',
+        gender: 'Male',
+        email: 'sample@user.com',
+        phone_number: '254123456789',
+        national_id: '12345678',
+        password: 'hashed',
+        role: 'Role',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]),
+
+    getAllUsers: jest.fn().mockImplementation(async () => [
+      {
+        id: 'sampleId',
+        f_name: 'User',
+        l_name: 'Updated',
+        facilityId: 'facilityId',
         gender: 'Male',
         email: 'sample@user.com',
         phone_number: '254123456789',
@@ -126,5 +161,23 @@ describe('UsersController', () => {
     expect(users.length).toEqual(1);
 
     expect(usersService.getUsersByRole).toHaveBeenCalledWith(data);
+  });
+
+  it('should get users by facilityId and role', async () => {
+    const data: GetUserByRoleAndFacility = {
+      facilityId: 'facilityId',
+      role: 'Role',
+    };
+    const users = await controller.getUserByRoleAndFacility(data);
+
+    expect(users.length).toEqual(1);
+
+    expect(usersService.getUserByRoleAndFacility).toHaveBeenCalledWith(data);
+  });
+
+  it('should get all users', async () => {
+    const users = await controller.getAllUsers();
+    expect(usersService.getAllUsers).toHaveBeenCalled();
+    expect(users.length).toEqual(1);
   });
 });

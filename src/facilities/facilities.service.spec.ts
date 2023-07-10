@@ -5,10 +5,19 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CreateFacilityDto } from './dto/create-facility.dto';
 import { UpdateFacilityDto } from './dto/update-facility.dto';
 import { DeleteFacilityDto } from './dto/delete-facility.dto';
+import { GetFacilityByIdDto } from './dto/get-facility.dto';
 
 const prismaService = {
   facility: {
     create: jest.fn().mockImplementation(async () => ({
+      id: 'sampleid',
+      name: 'sample facility',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      status: 'Active',
+    })),
+
+    findUnique: jest.fn().mockImplementation(async () => ({
       id: 'sampleid',
       name: 'sample facility',
       createdAt: new Date(),
@@ -145,5 +154,21 @@ describe('FacilitiesService', () => {
     expect(deleteFacility.message).toEqual(
       'sample facility edit deleted successfully',
     );
+  });
+
+  it('should find a facility', async () => {
+    const facilityId: GetFacilityByIdDto = {
+      id: 'sampleid',
+    };
+
+    const facility = await service.getFacilityById(facilityId.id);
+
+    expect(prismaService.facility.findUnique).toBeCalledWith({
+      where: {
+        id: 'sampleid',
+      },
+    });
+
+    expect(facility.id).toEqual('sampleid');
   });
 });

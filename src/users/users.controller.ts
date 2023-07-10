@@ -15,6 +15,7 @@ import { GetUserByRole } from './dto/get-user-by-role.dto';
 import { LoginManagementDto } from './dto/login-management.dto';
 import { Roles, UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dto';
 
 @Controller('users')
 export class UsersController {
@@ -40,8 +41,22 @@ export class UsersController {
 
   @UseGuards(RolesGuard)
   @UserRoles(Roles.ADMIN)
+  @Get('all')
+  async getAllUsers() {
+    return this.usersService.getAllUsers();
+  }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN, Roles.FACILITY)
   @Get('roles')
   getUsersByRole(@Query() data: GetUserByRole) {
     return this.usersService.getUsersByRole(data);
+  }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN, Roles.FACILITY)
+  @Get('roleandfacility')
+  getUserByRoleAndFacility(@Query() data: GetUserByRoleAndFacility) {
+    return this.usersService.getUserByRoleAndFacility(data);
   }
 }
