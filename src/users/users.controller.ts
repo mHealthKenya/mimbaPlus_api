@@ -16,6 +16,7 @@ import { LoginManagementDto } from './dto/login-management.dto';
 import { Roles, UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dto';
+import { GetUserById } from './dto/get-user-by-id.dto';
 
 @Controller('users')
 export class UsersController {
@@ -58,5 +59,10 @@ export class UsersController {
   @Get('roleandfacility')
   getUserByRoleAndFacility(@Query() data: GetUserByRoleAndFacility) {
     return this.usersService.getUserByRoleAndFacility(data);
+  }
+
+  @Get('user')
+  getUserById(@Query() data: GetUserById) {
+    return this.usersService.getUserById(data.id);
   }
 }

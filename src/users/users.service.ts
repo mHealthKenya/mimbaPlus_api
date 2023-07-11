@@ -210,6 +210,21 @@ export class UsersService {
     return users;
   }
 
+  async getUserById(id: string) {
+    const user = await this.prisma.user
+      .findUnique({
+        where: {
+          id,
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return user;
+  }
+
   @OnEvent('user.created')
   async handleManagementCreated(event: UserCreatedEvent) {
     const { email } = event;
