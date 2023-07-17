@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { FacilitiesModule } from './facilities/facilities.module';
 import { PrismaService } from './prisma/prisma.service';
 import { UsersModule } from './users/users.module';
+import { BiodataModule } from './biodata/biodata.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UsersModule } from './users/users.module';
       maxListeners: 100,
     }),
     FacilitiesModule,
+    BiodataModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
