@@ -188,13 +188,26 @@ export class CustomErrorFilter implements ExceptionFilter {
         break;
 
       default:
-        response.status(status).json({
-          statusCode: status,
-          timestamp: new Date().toISOString(),
-          path: request.url,
-          message,
-        });
-        break;
+        switch (error?.response?.name) {
+          case 'PrismaClientUnknownRequestError':
+            response.status(status).json({
+              statusCode: status,
+              timestamp: new Date().toISOString(),
+              path: request.url,
+              message:
+                'PrismaClientUnknownRequestError. Please check db connection.',
+            });
+            break;
+
+          default:
+            response.status(status).json({
+              statusCode: status,
+              timestamp: new Date().toISOString(),
+              path: request.url,
+              message,
+            });
+            break;
+        }
     }
   }
 }
