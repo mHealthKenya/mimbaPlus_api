@@ -74,9 +74,5 @@ export class MotherPrivateDataGuard implements CanActivate {
       default:
         return false;
     }
-
-    console.log('request', request.method);
-
-    return true;
   }
 }

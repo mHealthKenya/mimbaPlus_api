@@ -17,6 +17,8 @@ import { Roles, UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dto';
 import { GetUserById } from './dto/get-user-by-id.dto';
+import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -64,5 +66,15 @@ export class UsersController {
   @Get('user')
   getUserById(@Query() data: GetUserById) {
     return this.usersService.getUserById(data.id);
+  }
+
+  @Post('passwordrequest')
+  passwordResetRequest(@Body() data: PasswordResetRequestDto) {
+    return this.usersService.passwordResetRequest(data.email);
+  }
+
+  @Post('resetpassword')
+  resetPassword(@Body() data: UpdatePasswordDto) {
+    return this.usersService.resetPassword(data);
   }
 }
