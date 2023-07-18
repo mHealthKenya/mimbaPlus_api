@@ -255,7 +255,9 @@ export class UsersService {
           'password.request',
           new PasswordResetRequestEvent(data.email, data.code),
         );
-        return data;
+        return {
+          message: 'Password reset code successfully sent',
+        };
       })
       .catch((err) => {
         throw new BadRequestException(err);
