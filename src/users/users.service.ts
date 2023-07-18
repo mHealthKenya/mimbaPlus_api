@@ -16,6 +16,9 @@ import { LoginManagementDto } from './dto/login-management.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserCreatedEvent } from './events/user-created-event';
 import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dto';
+import { UpdatePasswordDto } from './dto/update-password.dto';
+import { PasswordResetRequestEvent } from './events/password-requested.event';
+import { emailBodyPass } from 'src/helpers/password-requested-email';
 
 export enum Roles {
   ADMIN = 'Admin',
@@ -223,6 +226,93 @@ export class UsersService {
       });
 
     return user;
+  }
+
+  async passwordResetRequest(email: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException(
+        'The email you provided does not exist in our database',
+      );
+    }
+
+    const code = (Math.random() + 1).toString(36).substring(7);
+
+    const newRCode = await this.prisma.resetCode
+      .create({
+        data: {
+          email,
+          code,
+        },
+      })
+      .then((data) => {
+        this.eventEmitter.emit(
+          'password.request',
+          new PasswordResetRequestEvent(data.email, data.code),
+        );
+        return data;
+      })
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return newRCode;
+  }
+
+  async resetPassword(data: UpdatePasswordDto) {
+    const { code, email, password } = data;
+
+    const codeExists = await this.prisma.resetCode.findUnique({
+      where: {
+        email_code: { email, code },
+      },
+    });
+
+    if (!codeExists) {
+      throw new BadRequestException('Invalid email or code provided');
+    }
+
+    const hashedPass = bcrypt.hashSync(password, 10);
+
+    const updateUser = this.prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        password: hashedPass,
+      },
+    });
+
+    const deleteCode = this.prisma.resetCode.delete({
+      where: {
+        email_code: { email, code },
+      },
+    });
+
+    return await this.prisma
+      .$transaction([updateUser, deleteCode])
+      .then(() => ({
+        message: 'Password reset was successful',
+      }));
+  }
+
+  @OnEvent('password.request')
+  async handlePasswordRequest(data: PasswordResetRequestEvent) {
+    const { email } = data;
+
+    const msg = emailBodyPass(data);
+
+    await new SendEmail(
+      email,
+      'Password Reset',
+      'We have received a request to reset your password',
+      msg,
+    ).send();
   }
 
   @OnEvent('user.created')
