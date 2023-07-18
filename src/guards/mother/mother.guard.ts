@@ -32,6 +32,10 @@ export class MotherPrivateDataGuard implements CanActivate {
           motherD,
         ]);
 
+        if (!facilityAdminDetails || !motherDetails) {
+          return false;
+        }
+
         if (
           facilityAdminDetails.role !== Roles.FACILITY ||
           !facilityAdminDetails.facilityId
@@ -63,8 +67,8 @@ export class MotherPrivateDataGuard implements CanActivate {
 
         return (
           isMother?.role === Roles.MOTHER &&
-          facilityAdmin.role === Roles.FACILITY &&
-          isMother.facilityId === facilityAdmin.facilityId
+          facilityAdmin?.role === Roles.FACILITY &&
+          isMother?.facilityId === facilityAdmin.facilityId
         );
 
       default:
