@@ -18,7 +18,7 @@ import { UserCreatedEvent } from './events/user-created-event';
 import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { PasswordResetRequestEvent } from './events/password-requested.event';
-import { emailBodyPass } from 'src/helpers/password-requested-email';
+import { emailBodyPass } from '../helpers/password-requested-email';
 
 export enum Roles {
   ADMIN = 'Admin',

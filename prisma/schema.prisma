@@ -34,6 +34,9 @@ model User {
   facilityId             String?
   BiodatumCreated        BioData[]          @relation("createdBy")
   BioDatumUpdated        BioData[]          @relation("updatedBy")
+  Schedule               Schedule[]         @relation("mother")
+  CreatedBy              Schedule[]         @relation("createdBy")
+  UpdateBy               Schedule[]         @relation("updatedBy")
 }
 
 model BioData {
@@ -71,6 +74,7 @@ model Facility {
   FollowUpRequests    FollowUpRequests[]
   LocationCoordinates LocationCoordinates[]
   users               User[]
+  Schedule            Schedule[]
 }
 
 model Appointments {
@@ -151,6 +155,26 @@ model ResetCode {
   updatedAt DateTime @updatedAt
 
   @@unique([email, code])
+}
+
+model Schedule {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  facility    Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facilityId  String
+  date        DateTime
+  status      String   @default("Scheduled")
+  mother      User     @relation(fields: [motherId], references: [id], "mother")
+  motherId    String
+  createdBy   User     @relation(fields: [createdById], references: [id], "createdBy")
+  createdById String
+  updatedBy   User     @relation(fields: [updatedById], references: [id], "updatedBy")
+  updatedById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([motherId, date])
 }
 
 //TODO ask to create a table to record clinical visits

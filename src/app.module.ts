@@ -7,6 +7,7 @@ import { FacilitiesModule } from './facilities/facilities.module';
 import { PrismaService } from './prisma/prisma.service';
 import { UsersModule } from './users/users.module';
 import { BiodataModule } from './biodata/biodata.module';
+import { SchedulesModule } from './schedules/schedules.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { BiodataModule } from './biodata/biodata.module';
     }),
     FacilitiesModule,
     BiodataModule,
+    SchedulesModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

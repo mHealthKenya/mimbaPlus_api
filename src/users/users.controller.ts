@@ -63,6 +63,8 @@ export class UsersController {
     return this.usersService.getUserByRoleAndFacility(data);
   }
 
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN, Roles.FACILITY)
   @Get('user')
   getUserById(@Query() data: GetUserById) {
     return this.usersService.getUserById(data.id);
