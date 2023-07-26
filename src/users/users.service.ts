@@ -203,6 +203,8 @@ export class UsersService {
               id: true,
             },
           },
+
+          BioData: role === Roles.MOTHER,
         },
       })
       .then((data) => data)
