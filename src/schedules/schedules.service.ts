@@ -7,6 +7,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { ScheduleCreatedEvent } from './events/create-schedule.event';
 import sendMessage from '../helpers/sendsms';
 import { ScheduleUpdatedEvent } from './events/update-schedule.event';
+import { FollowUpStatus } from '../followup/followup.service';
 
 export enum ScheduleStatus {
   SCHEDULED = 'Scheduled',
@@ -229,6 +230,15 @@ export class SchedulesService {
 
     switch (schedule.status) {
       case ScheduleStatus.CANCELED:
+        await this.prisma.followUp.update({
+          where: {
+            scheduleId: schedule.id,
+          },
+
+          data: {
+            status: FollowUpStatus.Cancelled,
+          },
+        });
         message =
           'Hi ' +
           f_name +
