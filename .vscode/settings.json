@@ -6,8 +6,10 @@
     "colspan",
     "passwordrequest",
     "roleandfacility",
+    "samplechvid",
     "samplefacilityid",
     "sampleid",
+    "samplescheduleid",
     "sendsms"
   ]
 }

@@ -37,6 +37,7 @@ model User {
   Schedule               Schedule[]         @relation("mother")
   CreatedBy              Schedule[]         @relation("createdBy")
   UpdateBy               Schedule[]         @relation("updatedBy")
+  FollowUp               FollowUp[]
 }
 
 model BioData {
@@ -158,23 +159,35 @@ model ResetCode {
 }
 
 model Schedule {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   title       String
   description String
-  facility    Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  facility    Facility   @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   facilityId  String
   date        DateTime
-  status      String   @default("Scheduled")
-  mother      User     @relation(fields: [motherId], references: [id], "mother")
+  status      String     @default("Scheduled")
+  mother      User       @relation(fields: [motherId], references: [id], "mother")
   motherId    String
-  createdBy   User     @relation(fields: [createdById], references: [id], "createdBy")
+  createdBy   User       @relation(fields: [createdById], references: [id], "createdBy")
   createdById String
-  updatedBy   User     @relation(fields: [updatedById], references: [id], "updatedBy")
+  updatedBy   User       @relation(fields: [updatedById], references: [id], "updatedBy")
   updatedById String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  FollowUp    FollowUp[]
 
   @@unique([motherId, date])
+}
+
+model FollowUp {
+  id         String   @id @default(cuid())
+  schedule   Schedule @relation(fields: [scheduleId], references: [id])
+  scheduleId String   @unique
+  chv        User     @relation(fields: [chvId], references: [id])
+  chvId      String
+  status     String   @default("Sent")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
 }
 
 //TODO ask to create a table to record clinical visits
