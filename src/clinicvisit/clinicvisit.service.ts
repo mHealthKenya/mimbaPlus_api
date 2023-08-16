@@ -11,8 +11,6 @@ export class ClinicvisitService {
       .create({
         data: {
           ...createClinicvisitDto,
-          hbLevel: +createClinicvisitDto.hbLevel,
-          weight: +createClinicvisitDto.weight,
         },
       })
       .then((data) => data)
@@ -117,8 +115,6 @@ export class ClinicvisitService {
   async update(data: UpdateClinicvisitDto) {
     const newData = {
       ...data,
-      weight: +data.weight || undefined,
-      hbLevel: +data.hbLevel || undefined,
     };
     const updated = await this.prismaService.clinicVisit
       .update({
