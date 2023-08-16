@@ -29,6 +29,35 @@ export class ClinicvisitService {
         orderBy: {
           createdAt: 'desc',
         },
+
+        include: {
+          facility: {
+            select: {
+              name: true,
+            },
+          },
+
+          mother: {
+            select: {
+              f_name: true,
+              l_name: true,
+              phone_number: true,
+              BioData: {
+                select: {
+                  height: true,
+                  weight: true,
+                  active: true,
+                  age: true,
+                  last_monthly_period: true,
+                  expected_delivery_date: true,
+                  pregnancy_period: true,
+                  last_clinic_visit: true,
+                  previous_pregnancies: true,
+                },
+              },
+            },
+          },
+        },
       })
       .then((data) => data)
       .catch((err) => {
@@ -42,6 +71,35 @@ export class ClinicvisitService {
       .findMany({
         where: {
           facilityId,
+        },
+
+        include: {
+          facility: {
+            select: {
+              name: true,
+            },
+          },
+
+          mother: {
+            select: {
+              f_name: true,
+              l_name: true,
+              phone_number: true,
+              BioData: {
+                select: {
+                  height: true,
+                  weight: true,
+                  active: true,
+                  age: true,
+                  last_monthly_period: true,
+                  expected_delivery_date: true,
+                  pregnancy_period: true,
+                  last_clinic_visit: true,
+                  previous_pregnancies: true,
+                },
+              },
+            },
+          },
         },
 
         orderBy: {
