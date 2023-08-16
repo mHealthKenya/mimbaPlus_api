@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { BiodataModule } from './biodata/biodata.module';
 import { SchedulesModule } from './schedules/schedules.module';
 import { FollowupModule } from './followup/followup.module';
+import { ClinicvisitModule } from './clinicvisit/clinicvisit.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { FollowupModule } from './followup/followup.module';
     BiodataModule,
     SchedulesModule,
     FollowupModule,
+    ClinicvisitModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

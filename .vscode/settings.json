@@ -3,6 +3,7 @@
     "Biodata",
     "Biodatum",
     "chvs",
+    "Clinicvisit",
     "colspan",
     "passwordrequest",
     "roleandfacility",
@@ -10,6 +11,7 @@
     "samplefacilityid",
     "sampleid",
     "samplescheduleid",
-    "sendsms"
+    "sendsms",
+    "vdrl"
   ]
 }
