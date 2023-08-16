@@ -16,7 +16,7 @@ export class CreateClinicvisitDto {
 
   @IsNotEmpty()
   @IsNumberString()
-  weight: number;
+  weight: string;
 
   @IsNotEmpty()
   @IsString()
@@ -24,7 +24,7 @@ export class CreateClinicvisitDto {
 
   @IsNotEmpty()
   @IsNumberString()
-  hbLevel: number;
+  hbLevel: string;
 
   @IsNotEmpty()
   @IsString()
@@ -48,7 +48,7 @@ export class CreateClinicvisitDto {
 
   @IsNotEmpty()
   @IsString()
-  syphilis: string;
+  bloodGroup: string;
 
   @IsNotEmpty()
   @IsString()
