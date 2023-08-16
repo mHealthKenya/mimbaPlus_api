@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Param,
   Patch,
   Post,
   Query,
@@ -14,6 +13,7 @@ import { RolesGuard } from '../guards/roles/roles.guard';
 import { Roles } from '../users/users.service';
 import { ClinicvisitService } from './clinicvisit.service';
 import { CreateClinicvisitDto } from './dto/create-clinicvisit.dto';
+import { LatestVisitDto } from './dto/latest-visit.dto';
 import { UpdateClinicvisitDto } from './dto/update-clinicvisit.dto';
 
 @Controller('clinicvisit')
@@ -39,6 +39,11 @@ export class ClinicvisitController {
   @Get('facility')
   findByFacility(@Query() facility: GetFacilityByIdDto) {
     return this.clinicvisitService.findVisitsByFacility(facility.id);
+  }
+
+  @Get('latest')
+  findLatestVisit(@Query() data: LatestVisitDto) {
+    return this.clinicvisitService.findLatest(data.motherId);
   }
 
   @UseGuards(RolesGuard)

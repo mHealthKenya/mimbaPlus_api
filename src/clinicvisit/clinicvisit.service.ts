@@ -21,6 +21,56 @@ export class ClinicvisitService {
     return newVisit;
   }
 
+  async findLatest(motherId: string) {
+    const result = await this.prismaService.clinicVisit
+      .findMany({
+        where: {
+          motherId,
+        },
+
+        orderBy: {
+          updatedAt: 'desc',
+        },
+
+        take: 1,
+
+        include: {
+          facility: {
+            select: {
+              name: true,
+            },
+          },
+
+          mother: {
+            select: {
+              f_name: true,
+              l_name: true,
+              phone_number: true,
+              BioData: {
+                select: {
+                  height: true,
+                  weight: true,
+                  active: true,
+                  age: true,
+                  last_monthly_period: true,
+                  expected_delivery_date: true,
+                  pregnancy_period: true,
+                  last_clinic_visit: true,
+                  previous_pregnancies: true,
+                },
+              },
+            },
+          },
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return result;
+  }
+
   async findAll() {
     const visits = await this.prismaService.clinicVisit
       .findMany({
