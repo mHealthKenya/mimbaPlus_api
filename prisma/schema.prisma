@@ -38,6 +38,7 @@ model User {
   CreatedBy              Schedule[]         @relation("createdBy")
   UpdateBy               Schedule[]         @relation("updatedBy")
   FollowUp               FollowUp[]
+  ClinicVisit            ClinicVisit[]
 }
 
 model BioData {
@@ -76,6 +77,7 @@ model Facility {
   LocationCoordinates LocationCoordinates[]
   users               User[]
   Schedule            Schedule[]
+  ClinicVisit         ClinicVisit[]
 }
 
 model Appointments {
@@ -188,6 +190,27 @@ model FollowUp {
   status     String   @default("Sent")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now())
+}
+
+model ClinicVisit {
+  id           String   @id @default(cuid())
+  mother       User     @relation(fields: [motherId], references: [id])
+  motherId     String
+  facility     Facility @relation(fields: [facilityId], references: [id])
+  facilityId   String
+  weight       Int
+  hiv          String   @default("not specified")
+  hbLevel      Float
+  rhesusFactor String
+  urinalysis   String
+  vdrl         String
+  bloodRBS     String
+  TB           String?
+  syphilis     String   @default("not tested")
+  hepatitisB   String   @default("not tested")
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 //TODO ask to create a table to record clinical visits
