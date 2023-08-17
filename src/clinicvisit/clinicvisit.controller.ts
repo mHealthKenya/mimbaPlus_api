@@ -15,6 +15,7 @@ import { ClinicvisitService } from './clinicvisit.service';
 import { CreateClinicvisitDto } from './dto/create-clinicvisit.dto';
 import { LatestVisitDto } from './dto/latest-visit.dto';
 import { UpdateClinicvisitDto } from './dto/update-clinicvisit.dto';
+import { VisitsByMotherDto } from './dto/visit-by-mother';
 
 @Controller('clinicvisit')
 export class ClinicvisitController {
@@ -41,9 +42,16 @@ export class ClinicvisitController {
     return this.clinicvisitService.findVisitsByFacility(facility.id);
   }
 
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.FACILITY)
   @Get('latest')
   findLatestVisit(@Query() data: LatestVisitDto) {
     return this.clinicvisitService.findLatest(data.motherId);
+  }
+
+  @Get('mother')
+  findByMotherId(@Query() data: VisitsByMotherDto) {
+    return this.clinicvisitService.findVisitsByMother(data.motherId);
   }
 
   @UseGuards(RolesGuard)
