@@ -63,7 +63,13 @@ export class ClinicvisitService {
           },
         },
       })
-      .then((data) => data)
+      .then((data) => {
+        if (data.length < 1) {
+          return {};
+        }
+
+        return data[0];
+      })
       .catch((err) => {
         throw new BadRequestException(err);
       });
@@ -119,6 +125,54 @@ export class ClinicvisitService {
       .findMany({
         where: {
           facilityId,
+        },
+
+        include: {
+          facility: {
+            select: {
+              name: true,
+            },
+          },
+
+          mother: {
+            select: {
+              f_name: true,
+              l_name: true,
+              phone_number: true,
+              BioData: {
+                select: {
+                  height: true,
+                  weight: true,
+                  active: true,
+                  age: true,
+                  last_monthly_period: true,
+                  expected_delivery_date: true,
+                  pregnancy_period: true,
+                  last_clinic_visit: true,
+                  previous_pregnancies: true,
+                },
+              },
+            },
+          },
+        },
+
+        orderBy: {
+          createdAt: 'desc',
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return visits;
+  }
+
+  async findVisitsByMother(motherId: string) {
+    const visits = await this.prismaService.clinicVisit
+      .findMany({
+        where: {
+          motherId,
         },
 
         include: {
