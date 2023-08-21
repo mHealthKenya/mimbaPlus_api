@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateFollowupDto } from './dto/create-followup.dto';
 import { UserHelper } from '../helpers/user-helper';
 import { UpdateFollowupDto } from './dto/update-followup.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const followUpService = {
   create: jest.fn().mockImplementation(async () => ({
@@ -28,7 +29,7 @@ describe('FollowupController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [FollowupController],
-      providers: [FollowupService, PrismaService, UserHelper],
+      providers: [FollowupService, PrismaService, UserHelper, EventEmitter2],
     })
       .overrideProvider(FollowupService)
       .useValue(followUpService)

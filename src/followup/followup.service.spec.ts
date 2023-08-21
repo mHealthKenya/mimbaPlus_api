@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateFollowupDto } from './dto/create-followup.dto';
 import { UpdateFollowupDto } from './dto/update-followup.dto';
 import { UserHelper } from '../helpers/user-helper';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 const prismaService = {
   followUp: {
@@ -40,6 +41,27 @@ const prismaService = {
       createdAt: new Date(),
       updatedAt: new Date(),
     })),
+
+    findUnique: jest.fn().mockImplementation(async () => ({
+      id: 'sampleid',
+      title: 'Test Schedule Edit',
+      description: ' A test schedule',
+      facilityId: 'facilityId',
+      date: new Date(),
+      status: 'Sent',
+      motherId: 'motherId',
+      mother: {
+        select: {
+          f_name: 'sample',
+          l_name: 'name',
+          phone_number: 'phone',
+        },
+      },
+      createdById: 'createdById',
+      updatedById: 'createdById',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    })),
   },
 
   user: {
@@ -56,6 +78,9 @@ const prismaService = {
       facilityId: 'facilityId',
       createdAt: new Date(),
       updatedAt: new Date(),
+      Facility: {
+        name: 'Sample',
+      },
     })),
   },
 
@@ -70,7 +95,7 @@ describe('FollowupService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [FollowupService, PrismaService, UserHelper],
+      providers: [FollowupService, PrismaService, UserHelper, EventEmitter2],
     })
       .overrideProvider(PrismaService)
       .useValue(prismaService)

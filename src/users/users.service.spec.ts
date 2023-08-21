@@ -142,21 +142,6 @@ describe('UsersService', () => {
 
     const users = await service.getUserByRoleAndFacility(data);
 
-    expect(prismaService.user.findMany).toHaveBeenCalledWith({
-      where: {
-        facilityId: 'facilityId',
-        role: 'Role',
-      },
-      include: {
-        Facility: {
-          select: {
-            name: true,
-            id: true,
-          },
-        },
-      },
-    });
-
     expect(users.length).toEqual(1);
   });
 

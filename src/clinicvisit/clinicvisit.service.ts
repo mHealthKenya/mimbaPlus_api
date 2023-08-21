@@ -21,11 +21,11 @@ export class ClinicvisitService {
     return newVisit;
   }
 
-  async findLatest(motherId: string) {
+  async findLatest(bioDataId: string) {
     const result = await this.prismaService.clinicVisit
       .findMany({
         where: {
-          motherId,
+          bioDataId,
         },
 
         orderBy: {
@@ -41,24 +41,24 @@ export class ClinicvisitService {
             },
           },
 
-          mother: {
+          bioData: {
             select: {
-              f_name: true,
-              l_name: true,
-              phone_number: true,
-              BioData: {
+              user: {
                 select: {
-                  height: true,
-                  weight: true,
-                  active: true,
-                  age: true,
-                  last_monthly_period: true,
-                  expected_delivery_date: true,
-                  pregnancy_period: true,
-                  last_clinic_visit: true,
-                  previous_pregnancies: true,
+                  f_name: true,
+                  l_name: true,
+                  phone_number: true,
                 },
               },
+              height: true,
+              weight: true,
+              active: true,
+              age: true,
+              last_monthly_period: true,
+              expected_delivery_date: true,
+              pregnancy_period: true,
+              last_clinic_visit: true,
+              previous_pregnancies: true,
             },
           },
         },
@@ -91,24 +91,24 @@ export class ClinicvisitService {
             },
           },
 
-          mother: {
+          bioData: {
             select: {
-              f_name: true,
-              l_name: true,
-              phone_number: true,
-              BioData: {
+              user: {
                 select: {
-                  height: true,
-                  weight: true,
-                  active: true,
-                  age: true,
-                  last_monthly_period: true,
-                  expected_delivery_date: true,
-                  pregnancy_period: true,
-                  last_clinic_visit: true,
-                  previous_pregnancies: true,
+                  f_name: true,
+                  l_name: true,
+                  phone_number: true,
                 },
               },
+              height: true,
+              weight: true,
+              active: true,
+              age: true,
+              last_monthly_period: true,
+              expected_delivery_date: true,
+              pregnancy_period: true,
+              last_clinic_visit: true,
+              previous_pregnancies: true,
             },
           },
         },
@@ -134,24 +134,24 @@ export class ClinicvisitService {
             },
           },
 
-          mother: {
+          bioData: {
             select: {
-              f_name: true,
-              l_name: true,
-              phone_number: true,
-              BioData: {
+              user: {
                 select: {
-                  height: true,
-                  weight: true,
-                  active: true,
-                  age: true,
-                  last_monthly_period: true,
-                  expected_delivery_date: true,
-                  pregnancy_period: true,
-                  last_clinic_visit: true,
-                  previous_pregnancies: true,
+                  f_name: true,
+                  l_name: true,
+                  phone_number: true,
                 },
               },
+              height: true,
+              weight: true,
+              active: true,
+              age: true,
+              last_monthly_period: true,
+              expected_delivery_date: true,
+              pregnancy_period: true,
+              last_clinic_visit: true,
+              previous_pregnancies: true,
             },
           },
         },
@@ -168,11 +168,11 @@ export class ClinicvisitService {
     return visits;
   }
 
-  async findVisitsByMother(motherId: string) {
+  async findVisitsByBioData(bioDataId: string) {
     const visits = await this.prismaService.clinicVisit
       .findMany({
         where: {
-          motherId,
+          bioDataId,
         },
 
         include: {
@@ -182,24 +182,24 @@ export class ClinicvisitService {
             },
           },
 
-          mother: {
+          bioData: {
             select: {
-              f_name: true,
-              l_name: true,
-              phone_number: true,
-              BioData: {
+              user: {
                 select: {
-                  height: true,
-                  weight: true,
-                  active: true,
-                  age: true,
-                  last_monthly_period: true,
-                  expected_delivery_date: true,
-                  pregnancy_period: true,
-                  last_clinic_visit: true,
-                  previous_pregnancies: true,
+                  f_name: true,
+                  l_name: true,
+                  phone_number: true,
                 },
               },
+              height: true,
+              weight: true,
+              active: true,
+              age: true,
+              last_monthly_period: true,
+              expected_delivery_date: true,
+              pregnancy_period: true,
+              last_clinic_visit: true,
+              previous_pregnancies: true,
             },
           },
         },

@@ -8,14 +8,14 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UserRoles } from '../decorators/roles/roles.decorator';
-import { GetFacilityByIdDto } from '../facilities/dto/get-facility.dto';
 import { RolesGuard } from '../guards/roles/roles.guard';
 import { Roles } from '../users/users.service';
 import { ClinicvisitService } from './clinicvisit.service';
 import { CreateClinicvisitDto } from './dto/create-clinicvisit.dto';
 import { LatestVisitDto } from './dto/latest-visit.dto';
 import { UpdateClinicvisitDto } from './dto/update-clinicvisit.dto';
-import { VisitsByMotherDto } from './dto/visit-by-mother';
+import { VisitsByBioDataDto } from './dto/visit-by-bio';
+import { GetVisitsByFacilityDto } from './dto/visits-by-facility-id.dto';
 
 @Controller('clinicvisit')
 export class ClinicvisitController {
@@ -38,20 +38,20 @@ export class ClinicvisitController {
   @UseGuards(RolesGuard)
   @UserRoles(Roles.FACILITY)
   @Get('facility')
-  findByFacility(@Query() facility: GetFacilityByIdDto) {
-    return this.clinicvisitService.findVisitsByFacility(facility.id);
+  findByFacility(@Query() facility: GetVisitsByFacilityDto) {
+    return this.clinicvisitService.findVisitsByFacility(facility.facilityId);
   }
 
   @UseGuards(RolesGuard)
   @UserRoles(Roles.FACILITY)
   @Get('latest')
   findLatestVisit(@Query() data: LatestVisitDto) {
-    return this.clinicvisitService.findLatest(data.motherId);
+    return this.clinicvisitService.findLatest(data.bioDataId);
   }
 
-  @Get('mother')
-  findByMotherId(@Query() data: VisitsByMotherDto) {
-    return this.clinicvisitService.findVisitsByMother(data.motherId);
+  @Get('bio')
+  findByBioData(@Query() data: VisitsByBioDataDto) {
+    return this.clinicvisitService.findVisitsByBioData(data.bioDataId);
   }
 
   @UseGuards(RolesGuard)

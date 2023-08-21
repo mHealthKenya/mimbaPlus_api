@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class VisitsByMotherDto {
-  @IsNotEmpty()
+export class FindByFacilityDto {
   @IsString()
-  motherId: string;
+  @IsNotEmpty()
+  facilityId: string;
 }
