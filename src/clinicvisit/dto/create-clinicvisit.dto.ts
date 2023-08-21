@@ -8,7 +8,7 @@ import {
 export class CreateClinicvisitDto {
   @IsNotEmpty()
   @IsString()
-  motherId: string;
+  bioDataId: string;
 
   @IsNotEmpty()
   @IsString()

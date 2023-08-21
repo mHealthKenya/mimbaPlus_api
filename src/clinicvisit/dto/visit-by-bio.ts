@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class LatestVisitDto {
+export class VisitsByBioDataDto {
   @IsNotEmpty()
   @IsString()
   bioDataId: string;

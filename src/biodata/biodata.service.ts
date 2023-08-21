@@ -110,4 +110,28 @@ export class BiodataService {
 
     return updatedDto;
   }
+
+  async bioDataByFacility(facilityId: string) {
+    const bio = await this.prisma.bioData.findMany({
+      where: {
+        facilityId,
+      },
+
+      include: {
+        user: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true,
+          },
+        },
+      },
+
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return bio;
+  }
 }
