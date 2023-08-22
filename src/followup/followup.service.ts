@@ -145,8 +145,6 @@ export class FollowupService {
       facilityName,
     } = data;
 
-    console.log(chvName);
-
     const message =
       'Hi ' +
       chvName +

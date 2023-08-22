@@ -1,4 +1,4 @@
-import { Body, Controller, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import { CreateFollowupDto } from './dto/create-followup.dto';
 import { FollowupService } from './followup.service';
 import { RolesGuard } from '../guards/roles/roles.guard';
@@ -18,7 +18,8 @@ export class FollowupController {
   }
 
   @UseGuards(RolesGuard)
-  @UserRoles(Roles.CHV)
+  @UserRoles(Roles.CHV, Roles.FACILITY)
+  @Get('all')
   getFollowUps() {
     return this.followupService.getFollowUps();
   }
