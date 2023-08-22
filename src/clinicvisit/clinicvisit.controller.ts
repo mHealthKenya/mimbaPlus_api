@@ -49,6 +49,8 @@ export class ClinicvisitController {
     return this.clinicvisitService.findLatest(data.bioDataId);
   }
 
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.FACILITY)
   @Get('bio')
   findByBioData(@Query() data: VisitsByBioDataDto) {
     return this.clinicvisitService.findVisitsByBioData(data.bioDataId);
