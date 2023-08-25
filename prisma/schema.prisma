@@ -38,6 +38,7 @@ model User {
   CreatedBy              Schedule[]         @relation("createdBy")
   UpdateBy               Schedule[]         @relation("updatedBy")
   FollowUp               FollowUp[]
+  knowledgeMaterial      KnowledgeMaterial[]
 }
 
 model BioData {
@@ -191,3 +192,15 @@ model FollowUp {
 }
 
 //TODO ask to create a table to record clinical visits
+
+
+// Knowledge base
+model KnowledgeMaterial {
+  id String @id @default(cuid())
+  name           String
+  description String
+  userId String
+  sharedWith User    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
+}
