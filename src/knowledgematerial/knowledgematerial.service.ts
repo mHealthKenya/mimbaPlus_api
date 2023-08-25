@@ -15,6 +15,7 @@ export class KnowledgematerialService {
   async create(createKnowledgematerialDto: CreateKnowledgematerialDto) {
     const knwmaterial = await this.prisma.knowledgeMaterial
       .create({
+        // some help with prisma model and below
         data: {
           ...createKnowledgematerialDto,
         },
