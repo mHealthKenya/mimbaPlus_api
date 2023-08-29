@@ -43,6 +43,25 @@ export class BiodataService {
     return newBiodata;
   }
 
+  async getById(id: string) {
+    const bio = await this.prisma.bioData
+      .findUnique({
+        where: {
+          id,
+        },
+
+        include: {
+          user: true,
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return bio;
+  }
+
   async getByMotherId(userId: string) {
     const biodatum = await this.prisma.bioData
       .findUnique({
