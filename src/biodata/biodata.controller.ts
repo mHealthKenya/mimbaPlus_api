@@ -13,6 +13,10 @@ import { MotherPrivateDataGuard } from '../guards/mother/mother.guard';
 import { GetByMotherIdDto } from './dto/get-by-mother-id.dto';
 import { UpdateBiodatumDto } from './dto/update-biodatum.dto';
 import { FindByFacilityDto } from './dto/find-by-facility';
+import { GetByIdDto } from './dto/get-by-id.dto';
+import { RolesGuard } from 'src/guards/roles/roles.guard';
+import { UserRoles } from 'src/decorators/roles/roles.decorator';
+import { Roles } from 'src/users/users.service';
 
 @Controller('biodata')
 export class BiodataController {
@@ -22,6 +26,13 @@ export class BiodataController {
   @UseGuards(MotherPrivateDataGuard)
   create(@Body() createBiodatumDto: CreateBiodatumDto) {
     return this.biodataService.create(createBiodatumDto);
+  }
+
+  @Get('byid')
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.FACILITY)
+  getById(@Query() data: GetByIdDto) {
+    return this.biodataService.getById(data.id);
   }
 
   @Get('id')
