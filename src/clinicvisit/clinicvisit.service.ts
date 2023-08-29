@@ -11,6 +11,7 @@ export class ClinicvisitService {
       .create({
         data: {
           ...createClinicvisitDto,
+          date: new Date(createClinicvisitDto.date),
         },
       })
       .then((data) => data)

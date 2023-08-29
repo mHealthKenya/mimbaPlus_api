@@ -3,6 +3,7 @@ import {
   IsString,
   IsOptional,
   IsNumberString,
+  IsDateString,
 } from 'class-validator';
 
 export class CreateClinicvisitDto {
@@ -13,6 +14,10 @@ export class CreateClinicvisitDto {
   @IsNotEmpty()
   @IsString()
   facilityId: string;
+
+  @IsNotEmpty()
+  @IsDateString()
+  date: string;
 
   @IsNotEmpty()
   @IsNumberString()
