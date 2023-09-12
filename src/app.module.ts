@@ -10,6 +10,8 @@ import { BiodataModule } from './biodata/biodata.module';
 import { SchedulesModule } from './schedules/schedules.module';
 import { FollowupModule } from './followup/followup.module';
 import { ClinicvisitModule } from './clinicvisit/clinicvisit.module';
+import { BirthplanModule } from './birthplan/birthplan.module';
+import { ConsentModule } from './consent/consent.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { ClinicvisitModule } from './clinicvisit/clinicvisit.module';
     SchedulesModule,
     FollowupModule,
     ClinicvisitModule,
+    BirthplanModule,
+    ConsentModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
