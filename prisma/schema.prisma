@@ -38,6 +38,8 @@ model User {
   CreatedBy              Schedule[]         @relation("createdBy")
   UpdateBy               Schedule[]         @relation("updatedBy")
   FollowUp               FollowUp[]
+  BirthPlan              BirthPlan[]
+  ConsentForm            ConsentForm[]
 }
 
 model BioData {
@@ -66,18 +68,20 @@ model BioData {
 
 //TODO Ask for details to be captured in registering a facility
 model Facility {
-  id                  String                @id @default(cuid())
-  name                String                @unique
-  BioData             BioData[]
-  Appointments        Appointments[]
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  status              String                @default("Active")
-  FollowUpRequests    FollowUpRequests[]
-  LocationCoordinates LocationCoordinates[]
-  users               User[]
-  Schedule            Schedule[]
-  ClinicVisit         ClinicVisit[]
+  id                   String                @id @default(cuid())
+  name                 String                @unique
+  BioData              BioData[]
+  Appointments         Appointments[]
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  status               String                @default("Active")
+  FollowUpRequests     FollowUpRequests[]
+  LocationCoordinates  LocationCoordinates[]
+  users                User[]
+  Schedule             Schedule[]
+  ClinicVisit          ClinicVisit[]
+  BirthPlan            BirthPlan[]
+  Alternative_Facility BirthPlan[]           @relation("alternative_facility")
 }
 
 model Appointments {
@@ -212,6 +216,37 @@ model ClinicVisit {
   date         DateTime @default(now())
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+model BirthPlan {
+  id                             String    @id @default(cuid())
+  mother                         User      @relation(fields: [motherId], references: [id])
+  motherId                       String
+  facility                       Facility  @relation(fields: [facilityId], references: [id])
+  facilityId                     String
+  alternative_facility           Facility? @relation(fields: [alternative_facility_id], references: [id], "alternative_facility")
+  alternative_facility_id        String?
+  delivery_mode                  String
+  support_person_name            String?
+  support_person_phone           String?
+  preferred_transport            String
+  preferred_attendant_name       String?
+  preferred_attendant_phone      String?
+  blood_donor_name               String?
+  blood_donor_phone              String?
+  emergency_decision_maker_phone String?
+  emergency_decision_maker_name  String?
+  delivery_bag                   Boolean   @default(false)
+  emergency_cs_plan              String?
+  savings_plan                   String?
+}
+
+model ConsentForm {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  accepted  Boolean  @default(true)
+  createdAt DateTime @default(now())
 }
 
 //TODO ask to create a table to record clinical visits
