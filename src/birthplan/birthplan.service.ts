@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateBirthplanDto } from './dto/create-birthplan.dto';
-import { UpdateBirthplanDto } from './dto/update-birthplan.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { CreateBirthplanDto } from './dto/create-birthplan.dto';
 
 @Injectable()
 export class BirthplanService {
@@ -20,19 +19,18 @@ export class BirthplanService {
     return nBirthPlan;
   }
 
-  findAll() {
-    return `This action returns all birthplan`;
-  }
+  async findByFacility(facilityId: string) {
+    const birthPlans = await this.prisma.birthPlan
+      .findMany({
+        where: {
+          facilityId,
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
 
-  findOne(id: number) {
-    return `This action returns a #${id} birthplan`;
-  }
-
-  update(id: number, updateBirthplanDto: UpdateBirthplanDto) {
-    return `This action updates a #${id} birthplan`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} birthplan`;
+    return birthPlans;
   }
 }
