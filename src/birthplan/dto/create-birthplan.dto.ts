@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateBirthplanDto {
   @IsNotEmpty()
@@ -54,7 +54,7 @@ export class CreateBirthplanDto {
   emergency_decision_maker_name?: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsBoolean()
   delivery_bag: boolean;
 
   @IsOptional()

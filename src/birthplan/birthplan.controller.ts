@@ -1,45 +1,26 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { BirthplanService } from './birthplan.service';
 import { CreateBirthplanDto } from './dto/create-birthplan.dto';
-import { UpdateBirthplanDto } from './dto/update-birthplan.dto';
+import { RolesGuard } from '../guards/roles/roles.guard';
+import { UserRoles } from '../decorators/roles/roles.decorator';
+import { Roles } from '../users/users.service';
+import { FindByFacilityDto } from './dto/find-by-facility.dto';
 
 @Controller('birthplan')
 export class BirthplanController {
   constructor(private readonly birthplanService: BirthplanService) {}
 
-  @Post()
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.FACILITY)
+  @Post('add')
   create(@Body() createBirthplanDto: CreateBirthplanDto) {
     return this.birthplanService.create(createBirthplanDto);
   }
 
-  @Get()
-  findAll() {
-    return this.birthplanService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.birthplanService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateBirthplanDto: UpdateBirthplanDto,
-  ) {
-    return this.birthplanService.update(+id, updateBirthplanDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.birthplanService.remove(+id);
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.FACILITY)
+  @Get('facility')
+  findByFacility(@Query() data: FindByFacilityDto) {
+    return this.birthplanService.findByFacility(data.facilityId);
   }
 }
