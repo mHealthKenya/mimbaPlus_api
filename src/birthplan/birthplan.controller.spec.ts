@@ -5,6 +5,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UserHelper } from '../helpers/user-helper';
 import { CreateBirthplanDto } from './dto/create-birthplan.dto';
 import { FindByFacilityDto } from './dto/find-by-facility.dto';
+import { GetByMotherDto } from './dto/get-by-id.dto';
+import { UpdateBirthplanDto } from './dto/update-birthplan.dto';
 
 const birthPlanService = {
   create: jest.fn().mockImplementation(async () => ({
@@ -52,6 +54,54 @@ const birthPlanService = {
       updatedAr: new Date(),
     },
   ]),
+
+  getByMotherId: jest.fn().mockImplementation(async () => ({
+    id: 'sampleId',
+    motherId: 'sampleId',
+    facilityId: 'sampleId',
+    alternative_facility_id: 'sampleId',
+    delivery_mode: 'Natural',
+    support_person_name: 'Test Support Person',
+    support_person_phone: '2547000000000',
+    preferred_transport: 'Ambulance',
+    preferred_attendant_name: 'Test Attendant Person',
+    preferred_attendant_phone: '2547000000000',
+    blood_donor_name: 'Test Donor',
+    blood_donor_phone: '2547000000000',
+    emergency_decision_maker_phone: '2547000000000',
+    emergency_decision_maker_name: 'Test Decision Maker',
+    delivery_bag: true,
+    emergency_cs_plan: 'Emergency CS PLan',
+    savings_plan: 'Savings Plan',
+    createdAt: new Date(),
+    updatedAr: new Date(),
+    mother: {
+      f_name: 'sample',
+      l_name: 'sample',
+    },
+  })),
+
+  updateBirthPlan: jest.fn().mockImplementation(async () => ({
+    id: 'sampleId',
+    motherId: 'sampleId',
+    facilityId: 'sampleId',
+    alternative_facility_id: 'sampleId',
+    delivery_mode: 'Natural',
+    support_person_name: 'Updated Field',
+    support_person_phone: '254719748142',
+    preferred_transport: 'Ambulance',
+    preferred_attendant_name: 'Test Attendant Person',
+    preferred_attendant_phone: '254719748142',
+    blood_donor_name: 'Test Donor',
+    blood_donor_phone: '254719748142',
+    emergency_decision_maker_phone: '254719748142',
+    emergency_decision_maker_name: 'Test Decision Maker',
+    delivery_bag: true,
+    emergency_cs_plan: 'Emergency CS PLan',
+    savings_plan: 'Savings Plan',
+    createdAt: '2023-09-12T10:51:36.337Z',
+    updatedAr: '2023-09-12T10:51:36.337Z',
+  })),
 };
 
 describe('BirthplanController', () => {
@@ -112,5 +162,32 @@ describe('BirthplanController', () => {
     expect(birthPlanService.findByFacility).toHaveBeenCalledWith(
       form.facilityId,
     );
+  });
+
+  it('should get a birthplan by mother Id', async () => {
+    const form: GetByMotherDto = {
+      motherId: 'sampleId',
+    };
+
+    const birthPlan = await controller.getByFacility(form);
+
+    expect(birthPlan.mother.f_name).toEqual('sample');
+
+    expect(birthPlanService.getByMotherId).toHaveBeenCalledWith(form.motherId);
+  });
+
+  it('should update a birthplan', async () => {
+    const form: UpdateBirthplanDto = {
+      id: 'sampleId',
+      support_person_name: 'Updated Field',
+    };
+
+    const updatedBirthPlan = await controller.updateBirthPlan(form);
+
+    expect(updatedBirthPlan.support_person_name).toEqual(
+      form.support_person_name,
+    );
+
+    expect(birthPlanService.updateBirthPlan).toHaveBeenCalledWith(form);
   });
 });
