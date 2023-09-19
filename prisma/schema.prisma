@@ -40,6 +40,7 @@ model User {
   FollowUp               FollowUp[]
   BirthPlan              BirthPlan[]
   ConsentForm            ConsentForm[]
+  createdById            String?
 }
 
 model BioData {
@@ -136,12 +137,12 @@ model Resources {
 
 model CHVTargets {
   id        String   @id @default(cuid())
-  chv       User     @relation(fields: [userId], references: [id])
+  chv       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   setTarget Int      @default(0) //Number of mothers to register
   current   Int      @default(0) //Mothers currently registered
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  userId    String
+  userId    String   @unique
 }
 
 model LocationCoordinates {

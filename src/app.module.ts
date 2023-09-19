@@ -12,6 +12,7 @@ import { FollowupModule } from './followup/followup.module';
 import { ClinicvisitModule } from './clinicvisit/clinicvisit.module';
 import { BirthplanModule } from './birthplan/birthplan.module';
 import { ConsentModule } from './consent/consent.module';
+import { TargetsModule } from './targets/targets.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ConsentModule } from './consent/consent.module';
     ClinicvisitModule,
     BirthplanModule,
     ConsentModule,
+    TargetsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
