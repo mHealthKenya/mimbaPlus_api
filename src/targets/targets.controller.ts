@@ -1,15 +1,7 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Patch, Query } from '@nestjs/common';
+import { GetTargetDto } from './dto/get-target.dto';
 import { UpdateTargetDto } from './dto/update-target.dto';
 import { TargetsService } from './targets.service';
-import { GetTargetDto } from './dto/get-target.dto';
 
 @Controller('targets')
 export class TargetsController {
