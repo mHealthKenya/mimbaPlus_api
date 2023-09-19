@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -7,18 +8,19 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
+import { emailBodyPass } from '../helpers/password-requested-email';
 import { SendEmail } from '../helpers/send-email';
 import { emailBody } from '../helpers/user-created-email';
+import { UserHelper } from '../helpers/user-helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dto';
 import { GetUserByRole } from './dto/get-user-by-role.dto';
 import { LoginManagementDto } from './dto/login-management.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UserCreatedEvent } from './events/user-created-event';
-import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { PasswordResetRequestEvent } from './events/password-requested.event';
-import { emailBodyPass } from '../helpers/password-requested-email';
+import { UserCreatedEvent } from './events/user-created-event';
 
 export enum Roles {
   ADMIN = 'Admin',
@@ -26,6 +28,13 @@ export enum Roles {
   CHV = 'CHV',
   MOTHER = 'Mother',
 }
+
+export const RoleSuperiority: Record<Roles, number> = {
+  [Roles.ADMIN]: 4,
+  [Roles.FACILITY]: 3,
+  [Roles.CHV]: 2,
+  [Roles.MOTHER]: 1,
+};
 
 export enum Gender {
   MALE = 'Male',
@@ -37,6 +46,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly userHelper: UserHelper,
   ) {}
 
   async createUser(createUser: CreateUserDto) {
@@ -45,19 +55,30 @@ export class UsersService {
 
     const password = bcrypt.hashSync(pass, 10);
 
+    const createdById = this.userHelper.getUser().id;
+    const role = this.userHelper.getUser().role;
+
+    if (RoleSuperiority[role] <= RoleSuperiority[createUser.role]) {
+      throw new ForbiddenException(
+        'Cannot Create a user with a higher or equal ranking.',
+      );
+    }
+
     const newUser = await this.prisma.user
       .create({
         data: {
           ...createUser,
           id,
           password,
+          createdById,
         },
       })
       .then((data) => {
         this.eventEmitter.emit(
           'user.created',
-          new UserCreatedEvent(data.email, pass),
+          new UserCreatedEvent(data.email, pass, createdById, role),
         );
+
         return {
           message: 'User created successfully',
           data,
@@ -322,7 +343,26 @@ export class UsersService {
 
   @OnEvent('user.created')
   async handleManagementCreated(event: UserCreatedEvent) {
-    const { email } = event;
+    const { email, role, createdById } = event;
+
+    if (role === Roles.CHV) {
+      await this.prisma.cHVTargets.upsert({
+        where: {
+          userId: createdById,
+        },
+
+        create: {
+          userId: createdById,
+          current: 1,
+        },
+
+        update: {
+          current: {
+            increment: 1,
+          },
+        },
+      });
+    }
 
     const msg = emailBody(event);
 
