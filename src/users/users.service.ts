@@ -205,6 +205,7 @@ export class UsersService {
           },
 
           BioData: role === Roles.MOTHER,
+          BirthPlan: role === Roles.MOTHER,
         },
       })
       .then((data) => data)
