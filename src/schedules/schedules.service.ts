@@ -79,6 +79,16 @@ export class SchedulesService {
           facilityId,
         },
 
+        include: {
+          mother: {
+            select: {
+              f_name: true,
+              l_name: true,
+              phone_number: true,
+            },
+          },
+        },
+
         orderBy: {
           updatedAt: 'desc',
         },
