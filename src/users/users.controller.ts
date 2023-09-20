@@ -79,4 +79,9 @@ export class UsersController {
   resetPassword(@Body() data: UpdatePasswordDto) {
     return this.usersService.resetPassword(data);
   }
+
+  @Get('chvmothers')
+  findCHVMothers() {
+    return this.usersService.findCHVMothers();
+  }
 }
