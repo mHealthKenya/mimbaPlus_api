@@ -327,6 +327,24 @@ export class UsersService {
       }));
   }
 
+  async findCHVMothers() {
+    const chvId = this.userHelper.getUser().id;
+
+    const mothers = await this.prisma.user
+      .findMany({
+        where: {
+          role: Roles.MOTHER,
+          createdById: chvId,
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return mothers;
+  }
+
   @OnEvent('password.request')
   async handlePasswordRequest(data: PasswordResetRequestEvent) {
     const { email } = data;
