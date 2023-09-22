@@ -82,7 +82,9 @@ export class BiodataService {
       })
       .then((data) => {
         if (!data) {
-          throw new NotFoundException('Invalid mother id');
+          return {
+            message: 'Bio Data Not Added',
+          };
         }
 
         return data;
