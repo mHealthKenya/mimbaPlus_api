@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserHelper } from '../helpers/user-helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBiodatumDto } from './dto/create-biodatum.dto';
@@ -16,8 +12,28 @@ export class BiodataService {
   ) {}
   async create(createBiodatumDto: CreateBiodatumDto) {
     const newBiodata = await this.prisma.bioData
-      .create({
-        data: {
+      .upsert({
+        where: {
+          userId: createBiodatumDto.userId,
+        },
+        update: {
+          ...createBiodatumDto,
+          height: +createBiodatumDto.height,
+          weight: +createBiodatumDto.weight,
+          age: +createBiodatumDto.age,
+          last_monthly_period: new Date(createBiodatumDto.last_monthly_period),
+          expected_delivery_date: new Date(
+            createBiodatumDto.expected_delivery_date,
+          ),
+          pregnancy_period: +createBiodatumDto.pregnancy_period,
+          last_clinic_visit: new Date(createBiodatumDto.last_clinic_visit),
+          previous_pregnancies: createBiodatumDto.previous_pregnancies
+            ? +createBiodatumDto.previous_pregnancies
+            : 0,
+          createdById: this.userHelper.getUser().id,
+          updatedById: this.userHelper.getUser().id,
+        },
+        create: {
           ...createBiodatumDto,
           height: +createBiodatumDto.height,
           weight: +createBiodatumDto.weight,
@@ -35,6 +51,7 @@ export class BiodataService {
           updatedById: this.userHelper.getUser().id,
         },
       })
+
       .then((data) => data)
       .catch((err) => {
         throw new BadRequestException(err);
