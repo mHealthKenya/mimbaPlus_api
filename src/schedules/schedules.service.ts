@@ -57,6 +57,35 @@ export class SchedulesService {
     return newSchedule;
   }
 
+  async findByMotherId(motherId: string) {
+    const schedulesByMotherId = await this.prisma.schedule
+      .findMany({
+        where: {
+          motherId,
+        },
+
+        include: {
+          mother: {
+            select: {
+              f_name: true,
+              l_name: true,
+              phone_number: true,
+            },
+          },
+        },
+
+        orderBy: {
+          updatedAt: 'desc',
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return schedulesByMotherId;
+  }
+
   async findAll() {
     const allSchedules = await this.prisma.schedule
       .findMany({
