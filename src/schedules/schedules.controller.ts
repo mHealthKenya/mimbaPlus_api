@@ -14,6 +14,7 @@ import { UserRoles } from '../decorators/roles/roles.decorator';
 import { Roles } from '../users/users.service';
 import { FindByFacilityDto } from './dto/find-by-facility.dto';
 import { UpdateFacilityDto } from '../facilities/dto/update-facility.dto';
+import { FindByMotherIdDto } from './dto/find-by-motherid.dto';
 
 @Controller('schedules')
 export class SchedulesController {
@@ -38,6 +39,13 @@ export class SchedulesController {
   @Get('facility')
   findByFacility(@Query() data: FindByFacilityDto) {
     return this.schedulesService.findByFacility(data.facilityId);
+  }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.FACILITY)
+  @Get('mother')
+  findByMotherId(@Query() data: FindByMotherIdDto) {
+    return this.schedulesService.findByMotherId(data.motherId);
   }
 
   @UseGuards(RolesGuard)
