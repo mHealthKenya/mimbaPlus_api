@@ -12,8 +12,15 @@ export class BirthplanService {
   constructor(private readonly prisma: PrismaService) {}
   async create(createBirthplanDto: CreateBirthplanDto) {
     const nBirthPlan = await this.prisma.birthPlan
-      .create({
-        data: {
+      .upsert({
+        where: {
+          motherId: createBirthplanDto.motherId,
+        },
+        create: {
+          ...createBirthplanDto,
+        },
+
+        update: {
           ...createBirthplanDto,
         },
       })
