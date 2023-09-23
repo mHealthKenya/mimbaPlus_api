@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBirthplanDto } from './dto/create-birthplan.dto';
 import { UpdateBirthplanDto } from './dto/update-birthplan.dto';
@@ -64,7 +60,7 @@ export class BirthplanService {
       })
       .then((data) => {
         if (!data) {
-          throw new NotFoundException('Invalid Mother ID');
+          return null;
         }
         return data;
       })
