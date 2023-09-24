@@ -7,7 +7,7 @@ import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { ScheduleCreatedEvent } from './events/create-schedule.event';
 import sendMessage from '../helpers/sendsms';
 import { ScheduleUpdatedEvent } from './events/update-schedule.event';
-import { FollowUpStatus } from '../followup/followup.service';
+import { FollowUpStatus, FollowupService } from '../followup/followup.service';
 
 export enum ScheduleStatus {
   SCHEDULED = 'Scheduled',
@@ -22,6 +22,7 @@ export class SchedulesService {
     private readonly prisma: PrismaService,
     private readonly userHelper: UserHelper,
     private readonly eventEmitter: EventEmitter2,
+    private readonly followUpService: FollowupService,
   ) {}
   async create(createScheduleDto: CreateScheduleDto) {
     const createdById = this.userHelper.getUser().id;
@@ -233,7 +234,7 @@ export class SchedulesService {
   async handleScheduleUpdated(props: ScheduleUpdatedEvent) {
     const { data } = props;
 
-    const { date, title, id } = data;
+    const { date, title, id, chvId } = data;
 
     const motherD = this.prisma.user.findUnique({
       where: {
@@ -293,6 +294,12 @@ export class SchedulesService {
           time.split(', ')[1] +
           ' Has been cancelled. Please reach out to your CHV or Facility for further information';
         break;
+
+      case ScheduleStatus.FOLLOW_UP:
+        await this.followUpService.create({
+          scheduleId: schedule.id,
+          chvId,
+        });
 
       default:
         message =
