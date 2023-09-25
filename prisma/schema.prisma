@@ -252,4 +252,14 @@ model ConsentForm {
   createdAt DateTime @default(now())
 }
 
+model Message {
+  id          String  @id @default(cuid())
+  cost        Float?  @default(0)
+  messageId   String?
+  status      String
+  statusCode  Int
+  messagePart Int?
+  createdAt DateTime @default(now())
+}
+
 //TODO ask to create a table to record clinical visits
