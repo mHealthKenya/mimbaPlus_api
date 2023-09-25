@@ -10,4 +10,8 @@ export class UpdateScheduleDto extends PartialType(CreateScheduleDto) {
   @IsString()
   @IsOptional()
   status?: string;
+
+  @IsString()
+  @IsOptional()
+  chvId?: string;
 }
