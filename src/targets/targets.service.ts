@@ -5,10 +5,14 @@ import {
 } from '@nestjs/common';
 import { UpdateTargetDto } from './dto/update-target.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserHelper } from '../helpers/user-helper';
 
 @Injectable()
 export class TargetsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly userHelper: UserHelper,
+  ) {}
   async findAll() {
     const targets = await this.prisma.cHVTargets
       .findMany({
@@ -84,5 +88,22 @@ export class TargetsService {
         throw new BadRequestException(err);
       });
     return update;
+  }
+
+  async getCHVTargets() {
+    const userId = await this.userHelper.getUser().id;
+
+    const target = await this.prisma.cHVTargets
+      .findUnique({
+        where: {
+          userId,
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return target;
   }
 }

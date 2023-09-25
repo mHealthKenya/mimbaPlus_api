@@ -30,4 +30,11 @@ export class TargetsController {
   update(@Body() updateTargetDto: UpdateTargetDto) {
     return this.targetsService.update(updateTargetDto);
   }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.CHV)
+  @Get('chvtarget')
+  getChvTarget() {
+    return this.targetsService.getCHVTargets();
+  }
 }
