@@ -24,7 +24,7 @@ const sendMessage = async ({ phoneNumber, message }: SMSProps) => {
   try {
     const sent = await sms.send(options);
 
-    // console.log('sent', sent.SMSMessageData);
+    console.log('sent', sent.SMSMessageData);
 
     return sent.SMSMessageData;
   } catch (error) {
