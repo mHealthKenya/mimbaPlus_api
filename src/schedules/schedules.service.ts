@@ -1,9 +1,9 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { FollowUpStatus, FollowupService } from '../followup/followup.service';
-import sendMessage from '../helpers/sendsms';
+import { FollowUpStatus } from '../followup/followup.service';
 import { UserHelper } from '../helpers/user-helper';
 import { PrismaService } from '../prisma/prisma.service';
+import { SendsmsService } from '../sendsms/sendsms.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { ScheduleCreatedEvent } from './events/create-schedule.event';
@@ -22,7 +22,7 @@ export class SchedulesService {
     private readonly prisma: PrismaService,
     private readonly userHelper: UserHelper,
     private readonly eventEmitter: EventEmitter2,
-    private readonly followUpService: FollowupService,
+    private readonly smsService: SendsmsService,
   ) {}
   async create(createScheduleDto: CreateScheduleDto) {
     const createdById = this.userHelper.getUser().id;
@@ -164,6 +164,7 @@ export class SchedulesService {
       })
       .then((data) => {
         if (chvId && rest?.status === ScheduleStatus.FOLLOW_UP) {
+          console.log('here');
           this.eventEmitter.emit(
             'm+:schedule.updated-followup',
             new ScheduleUpdatedEvent({
@@ -176,20 +177,20 @@ export class SchedulesService {
               chvId,
             }),
           );
+        } else {
+          this.eventEmitter.emit(
+            'm+:schedule.updated',
+            new ScheduleUpdatedEvent({
+              id: data.id,
+              motherId: data.motherId,
+              facilityId: data.facilityId,
+              title: data.title,
+              description: data.description,
+              date: data.date,
+              chvId,
+            }),
+          );
         }
-
-        this.eventEmitter.emit(
-          'm+:schedule.updated',
-          new ScheduleUpdatedEvent({
-            id: data.id,
-            motherId: data.motherId,
-            facilityId: data.facilityId,
-            title: data.title,
-            description: data.description,
-            date: data.date,
-            chvId,
-          }),
-        );
 
         return data;
       })
@@ -240,7 +241,7 @@ export class SchedulesService {
       ' at ' +
       time.split(', ')[1];
 
-    await sendMessage({
+    this.smsService.sendSMSFn({
       phoneNumber: '+' + phone_number,
       message: message,
     });
@@ -310,7 +311,7 @@ export class SchedulesService {
           time.split(', ')[1] +
           ' Has been cancelled. Please reach out to your CHV or Facility for further information';
 
-        await sendMessage({
+        await this.smsService.sendSMSFn({
           phoneNumber: '+' + phone_number,
           message: message,
         });
@@ -334,7 +335,7 @@ export class SchedulesService {
           ' at ' +
           time.split(', ')[1];
 
-        await sendMessage({
+        await this.smsService.sendSMSFn({
           phoneNumber: '+' + phone_number,
           message: message,
         });
@@ -344,6 +345,7 @@ export class SchedulesService {
 
   @OnEvent('m+:schedule.updated-followup')
   async handleScheduleUpdatedCHV(props: ScheduleUpdatedEvent) {
+    console.log('reached');
     const { data } = props;
 
     const { id, chvId } = data;
@@ -401,7 +403,7 @@ export class SchedulesService {
       facilityName +
       ' at the earliest time possible';
 
-    await sendMessage({
+    await this.smsService.sendSMSFn({
       phoneNumber: '+' + phone_number,
       message: message,
     });

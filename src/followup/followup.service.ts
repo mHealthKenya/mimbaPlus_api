@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateFollowupDto } from './dto/create-followup.dto';
-import { ScheduleStatus } from '../schedules/schedules.service';
-import { Roles } from '../users/users.service';
-import { UserHelper } from '../helpers/user-helper';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import sendMessage from '../helpers/sendsms';
+import { UserHelper } from '../helpers/user-helper';
+import { PrismaService } from '../prisma/prisma.service';
+import { ScheduleStatus } from '../schedules/schedules.service';
+import { SendsmsService } from '../sendsms/sendsms.service';
+import { Roles } from '../users/users.service';
+import { CreateFollowupDto } from './dto/create-followup.dto';
 import { CreateFollowUpEvent } from './events/followup-created.event';
 
 export enum FollowUpStatus {
@@ -20,6 +20,7 @@ export class FollowupService {
     private readonly prisma: PrismaService,
     private readonly userHelper: UserHelper,
     private readonly eventEmitter: EventEmitter2,
+    private readonly smsService: SendsmsService,
   ) {}
   async create(createFollowupDto: CreateFollowupDto) {
     const scheduleD = this.prisma.schedule.findUnique({
@@ -105,6 +106,15 @@ export class FollowupService {
         where: {
           chvId,
         },
+
+        include: {
+          schedule: {
+            select: {
+              title: true,
+              description: true,
+            },
+          },
+        },
       })
       .then((data) => data)
       .catch((err) => {
@@ -156,7 +166,7 @@ export class FollowupService {
       facilityName +
       ' at the earliest time possible';
 
-    await sendMessage({
+    await this.smsService.sendSMSFn({
       phoneNumber: '+' + phone_number,
       message: message,
     });

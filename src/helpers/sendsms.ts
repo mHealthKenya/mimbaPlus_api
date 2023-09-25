@@ -1,6 +1,6 @@
 import * as AfricasTalking from 'africastalking';
 
-interface SMSProps {
+export interface SMSProps {
   phoneNumber: string;
   message: string;
 }
@@ -22,13 +22,18 @@ const sendMessage = async ({ phoneNumber, message }: SMSProps) => {
   };
 
   try {
+    console.log('called');
     const sent = await sms.send(options);
-
-    console.log('sent', sent.SMSMessageData);
-
     return sent.SMSMessageData;
   } catch (error) {
-    console.log('error', error);
+    console.log('error');
+    const statusCode = error?.response?.status;
+    const status = error?.response?.statusText;
+
+    return {
+      statusCode,
+      status,
+    };
   }
 };
 
