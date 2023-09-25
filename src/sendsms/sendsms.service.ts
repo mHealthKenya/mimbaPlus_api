@@ -1,16 +1,21 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import * as AfricasTalking from 'africastalking';
-import { SMSProps } from '../helpers/sendsms';
+
 import { PrismaService } from '../prisma/prisma.service';
 import { Message } from './events/message.event';
+import { DatePicker } from '../helpers/date-picker';
+
+export interface SMSProps {
+  phoneNumber: string;
+  message: string;
+}
 
 @Injectable()
 export class SendsmsService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  today = new Date();
-  startOfMonth = new Date(this.today.getFullYear(), this.today.getMonth(), 1);
-  endOfMonth = new Date(this.today.getFullYear(), this.today.getMonth() + 1, 0);
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly datePicker: DatePicker,
+  ) {}
 
   credentials = {
     apiKey: process.env.AT_API_KEY,
@@ -64,11 +69,6 @@ export class SendsmsService {
   }
 
   async findSMS() {
-    console.log({
-      today: this.today,
-      start: this.startOfMonth,
-      end: this.endOfMonth,
-    });
     const val = await this.prisma.message
       .findMany({
         orderBy: {
@@ -117,8 +117,8 @@ export class SendsmsService {
       .aggregate({
         where: {
           createdAt: {
-            lte: this.endOfMonth,
-            gte: this.startOfMonth,
+            lte: this.datePicker.monthRange().endOfMonth,
+            gte: this.datePicker.monthRange().startOfMonth,
           },
         },
         _sum: {
@@ -139,8 +139,8 @@ export class SendsmsService {
         by: ['statusCode'],
         where: {
           createdAt: {
-            lte: this.endOfMonth,
-            gte: this.startOfMonth,
+            lte: this.datePicker.monthRange().endOfMonth,
+            gte: this.datePicker.monthRange().startOfMonth,
           },
         },
         _count: {

@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { SendsmsService } from '../sendsms/sendsms.service';
 import { SchedulesController } from './schedules.controller';
 import { SchedulesService } from './schedules.service';
+import { DatePicker } from '../helpers/date-picker';
 
 @Module({
   controllers: [SchedulesController],
@@ -15,6 +16,7 @@ import { SchedulesService } from './schedules.service';
     UserHelper,
     FollowupService,
     SendsmsService,
+    DatePicker,
   ],
 })
 export class SchedulesModule implements NestModule {

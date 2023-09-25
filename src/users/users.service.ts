@@ -345,6 +345,97 @@ export class UsersService {
     return mothers;
   }
 
+  async allUsers() {
+    const all = await this.prisma.user
+      .count()
+      .then((data) => ({
+        total_users: data,
+      }))
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return all;
+  }
+
+  async usersByRole() {
+    const userRoles = await this.prisma.user
+      .groupBy({
+        by: ['role'],
+        _count: {
+          role: true,
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return userRoles;
+  }
+
+  async usersByFacility() {
+    const users = await this.prisma.user.groupBy({
+      by: ['facilityId'],
+
+      _count: {
+        facilityId: true,
+      },
+
+      where: {
+        role: 'Mother',
+      },
+    });
+
+    const facilityNames = await this.prisma.facility.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    const facilityUsers = facilityNames.map((facility) => ({
+      facilityId: facility.id,
+      count:
+        users.find((user) => user.facilityId === facility.id)?._count
+          ?.facilityId || 0,
+      facilityName: facility.name,
+    }));
+
+    return facilityUsers;
+  }
+
+  async chVsByFacility() {
+    const users = await this.prisma.user.groupBy({
+      by: ['facilityId'],
+
+      _count: {
+        facilityId: true,
+      },
+
+      where: {
+        role: 'CHV',
+      },
+    });
+
+    const facilityNames = await this.prisma.facility.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    const facilityUsers = facilityNames.map((facility) => ({
+      facilityId: facility.id,
+      count:
+        users.find((user) => user.facilityId === facility.id)?._count
+          ?.facilityId || 0,
+      facilityName: facility.name,
+    }));
+
+    return facilityUsers;
+  }
+
   @OnEvent('password.request')
   async handlePasswordRequest(data: PasswordResetRequestEvent) {
     const { email } = data;

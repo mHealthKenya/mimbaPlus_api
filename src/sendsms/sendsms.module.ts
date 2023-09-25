@@ -4,10 +4,11 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { SendsmsController } from './sendsms.controller';
 import { SendsmsService } from './sendsms.service';
 import { AuthMiddleware } from '../middleware/auth/auth.middleware';
+import { DatePicker } from '../helpers/date-picker';
 
 @Module({
   controllers: [SendsmsController],
-  providers: [PrismaService, UserHelper, SendsmsService],
+  providers: [PrismaService, UserHelper, SendsmsService, DatePicker],
 })
 export class SendsmsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

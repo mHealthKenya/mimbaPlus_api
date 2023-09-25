@@ -80,8 +80,38 @@ export class UsersController {
     return this.usersService.resetPassword(data);
   }
 
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.CHV)
   @Get('chvmothers')
   findCHVMothers() {
     return this.usersService.findCHVMothers();
+  }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('count')
+  countUser() {
+    return this.usersService.allUsers();
+  }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('rolescount')
+  countUserRoles() {
+    return this.usersService.usersByRole();
+  }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('facilitydistribution')
+  facilityDistribution() {
+    return this.usersService.usersByFacility();
+  }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('facilitychvdistribution')
+  facilityCHDistribution() {
+    return this.usersService.chVsByFacility();
   }
 }
