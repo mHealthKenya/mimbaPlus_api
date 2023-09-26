@@ -237,4 +237,44 @@ export class ClinicvisitService {
       });
     return updated;
   }
+
+  async countVisits() {
+    const count = await this.prismaService.clinicVisit
+      .count()
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return {
+      count,
+    };
+  }
+
+  async visitByFacility() {
+    const val = await this.prismaService.clinicVisit.groupBy({
+      by: ['facilityId'],
+
+      _count: {
+        facilityId: true,
+      },
+    });
+
+    const facilityNames = await this.prismaService.facility.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    const facilityVisits = facilityNames.map((facility) => ({
+      facilityId: facility.id,
+      count:
+        val.find((item) => item.facilityId === facility.id)?._count
+          ?.facilityId || 0,
+      facilityName: facility.name,
+    }));
+
+    return facilityVisits;
+  }
 }
