@@ -62,4 +62,18 @@ export class ClinicvisitController {
   update(@Body() updateClinicvisitDto: UpdateClinicvisitDto) {
     return this.clinicvisitService.update(updateClinicvisitDto);
   }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.FACILITY)
+  @Get('count')
+  count() {
+    return this.clinicvisitService.countVisits();
+  }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('visits/count')
+  countVisit() {
+    return this.clinicvisitService.visitByFacility();
+  }
 }
