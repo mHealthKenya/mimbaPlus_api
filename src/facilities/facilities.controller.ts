@@ -56,4 +56,9 @@ export class FacilitiesController {
   getFacilityById(@Query() data: GetFacilityByIdDto) {
     return this.facilitiesService.getFacilityById(data.id);
   }
+
+  @Get('facilitycount')
+  facilityCount() {
+    return this.facilitiesService.countFacilities();
+  }
 }

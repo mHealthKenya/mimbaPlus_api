@@ -25,7 +25,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(RolesGuard)
-  @UserRoles(Roles.CHV)
+  @UserRoles(Roles.CHV, Roles.ADMIN)
   @Post('add')
   async createUser(@Body() createUser: CreateUserDto) {
     return this.usersService.createUser(createUser);
@@ -108,8 +108,8 @@ export class UsersController {
     return this.usersService.usersByFacility();
   }
 
-  @UseGuards(RolesGuard)
-  @UserRoles(Roles.ADMIN)
+  // @UseGuards(RolesGuard)
+  // @UserRoles(Roles.ADMIN)
   @Get('facilitychvdistribution')
   facilityCHDistribution() {
     return this.usersService.chVsByFacility();

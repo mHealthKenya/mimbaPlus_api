@@ -159,6 +159,14 @@ export class FacilitiesService {
     }
   }
 
+  async countFacilities() {
+    const count = await this.prisma.facility.count().then((data) => data);
+
+    return {
+      count,
+    };
+  }
+
   @OnEvent('facility.created')
   async handleFacilityCreated(data: FacilityCreatedEvent) {
     const { name, id } = data;
