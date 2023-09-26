@@ -64,7 +64,7 @@ export class ClinicvisitController {
   }
 
   @UseGuards(RolesGuard)
-  @UserRoles(Roles.FACILITY)
+  @UserRoles(Roles.ADMIN)
   @Get('count')
   count() {
     return this.clinicvisitService.countVisits();
