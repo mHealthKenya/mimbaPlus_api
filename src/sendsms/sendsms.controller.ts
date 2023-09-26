@@ -8,8 +8,8 @@ import { Roles } from '../users/users.service';
 export class SendsmsController {
   constructor(private readonly smsService: SendsmsService) {}
 
-  @UseGuards(RolesGuard)
-  @UserRoles(Roles.ADMIN)
+  // @UseGuards(RolesGuard)
+  // @UserRoles(Roles.ADMIN)
   @Get('all')
   handleAllSMS() {
     return this.smsService.findSMS();
@@ -22,8 +22,8 @@ export class SendsmsController {
     return this.smsService.smsCost();
   }
 
-  @UseGuards(RolesGuard)
-  @UserRoles(Roles.ADMIN)
+  // @UseGuards(RolesGuard)
+  // @UserRoles(Roles.ADMIN)
   @Get('stats')
   handleStats() {
     return this.smsService.smsStats();

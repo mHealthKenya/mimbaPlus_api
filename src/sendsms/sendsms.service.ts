@@ -101,9 +101,8 @@ export class SendsmsService {
   async smsStats() {
     const stats = await this.prisma.message
       .groupBy({
-        by: ['statusCode'],
+        by: ['status'],
         _count: {
-          statusCode: true,
           status: true,
         },
       })
@@ -136,7 +135,7 @@ export class SendsmsService {
   async monthlyStats() {
     const stats = await this.prisma.message
       .groupBy({
-        by: ['statusCode'],
+        by: ['status'],
         where: {
           createdAt: {
             lte: this.datePicker.monthRange().endOfMonth,
@@ -144,7 +143,6 @@ export class SendsmsService {
           },
         },
         _count: {
-          statusCode: true,
           status: true,
         },
       })
