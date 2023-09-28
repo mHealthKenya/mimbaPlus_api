@@ -54,4 +54,11 @@ export class SchedulesController {
   updateSchedule(@Body() data: UpdateFacilityDto) {
     return this.schedulesService.updateSchedule(data);
   }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.CHV)
+  @Get('appointments')
+  findAppointments() {
+    return this.schedulesService.findByCHV();
+  }
 }

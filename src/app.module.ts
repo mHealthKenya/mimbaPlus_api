@@ -14,6 +14,7 @@ import { SchedulesModule } from './schedules/schedules.module';
 import { SendsmsModule } from './sendsms/sendsms.module';
 import { TargetsModule } from './targets/targets.module';
 import { UsersModule } from './users/users.module';
+import { EnquiriesModule } from './enquiries/enquiries.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { UsersModule } from './users/users.module';
     ConsentModule,
     TargetsModule,
     SendsmsModule,
+    EnquiriesModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

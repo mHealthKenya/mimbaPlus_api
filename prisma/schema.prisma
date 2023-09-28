@@ -41,6 +41,8 @@ model User {
   BirthPlan              BirthPlan[]
   ConsentForm            ConsentForm[]
   createdById            String?
+  Enquiries              Enquiries[]
+  RepliedBy              Enquiries[]        @relation("repliedBy")
 }
 
 model BioData {
@@ -83,6 +85,7 @@ model Facility {
   ClinicVisit          ClinicVisit[]
   BirthPlan            BirthPlan[]
   Alternative_Facility BirthPlan[]           @relation("alternative_facility")
+  Enquiries            Enquiries[]
 }
 
 model Appointments {
@@ -253,13 +256,29 @@ model ConsentForm {
 }
 
 model Message {
-  id          String  @id @default(cuid())
-  cost        Float?  @default(0)
+  id          String   @id @default(cuid())
+  cost        Float?   @default(0)
   messageId   String?
   status      String
   statusCode  Int
   messagePart Int?
-  createdAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model Enquiries {
+  id               String    @id @default(cuid())
+  sender           User      @relation(fields: [senderId], references: [id])
+  senderId         String
+  title            String
+  description      String
+  replyTitle       String?
+  replyDescription String?
+  facility         Facility? @relation(fields: [facilityId], references: [id])
+  facilityId       String?
+  repliedBy        User?     @relation(fields: [repliedById], references: [id], "repliedBy")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  repliedById      String?
 }
 
 //TODO ask to create a table to record clinical visits
