@@ -201,6 +201,31 @@ export class SchedulesService {
     return updatedSchedule;
   }
 
+  async findByCHV() {
+    const userId = this.userHelper.getUser().id;
+
+    const mothers = await this.prisma.user.findMany({
+      where: {
+        createdById: userId,
+      },
+    });
+
+    const appointments = await this.prisma.schedule
+      .findMany({
+        where: {
+          motherId: {
+            in: mothers.map((item) => item.id),
+          },
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return appointments;
+  }
+
   @OnEvent('m+:schedule.created')
   async handleScheduleCreated(props: ScheduleCreatedEvent) {
     const { data } = props;
@@ -345,7 +370,6 @@ export class SchedulesService {
 
   @OnEvent('m+:schedule.updated-followup')
   async handleScheduleUpdatedCHV(props: ScheduleUpdatedEvent) {
-    console.log('reached');
     const { data } = props;
 
     const { id, chvId } = data;
