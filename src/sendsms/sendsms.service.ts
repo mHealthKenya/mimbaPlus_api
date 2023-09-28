@@ -132,6 +132,28 @@ export class SendsmsService {
     return totalCost;
   }
 
+  async monthlySMS() {
+    const totalCost = await this.prisma.message
+      .count({
+        where: {
+          createdAt: {
+            lte: this.datePicker.monthRange().endOfMonth,
+            gte: this.datePicker.monthRange().startOfMonth,
+          },
+
+          status: 'Success',
+        },
+      })
+      .then((data) => ({
+        count: data,
+      }))
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return totalCost;
+  }
+
   async monthlyStats() {
     const stats = await this.prisma.message
       .groupBy({

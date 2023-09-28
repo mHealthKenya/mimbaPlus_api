@@ -108,10 +108,17 @@ export class UsersController {
     return this.usersService.usersByFacility();
   }
 
-  // @UseGuards(RolesGuard)
-  // @UserRoles(Roles.ADMIN)
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
   @Get('facilitychvdistribution')
   facilityCHDistribution() {
     return this.usersService.chVsByFacility();
+  }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('distribution')
+  userDistribution() {
+    return this.usersService.countUsersByRole();
   }
 }

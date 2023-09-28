@@ -2,10 +2,14 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateClinicvisitDto } from './dto/create-clinicvisit.dto';
 import { UpdateClinicvisitDto } from './dto/update-clinicvisit.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { DatePicker } from '../helpers/date-picker';
 
 @Injectable()
 export class ClinicvisitService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly datePicker: DatePicker,
+  ) {}
   async create(createClinicvisitDto: CreateClinicvisitDto) {
     const newVisit = await this.prismaService.clinicVisit
       .create({
@@ -276,5 +280,25 @@ export class ClinicvisitService {
     }));
 
     return facilityVisits;
+  }
+
+  async monthlyClinicVisit() {
+    const totalCost = await this.prismaService.clinicVisit
+      .count({
+        where: {
+          createdAt: {
+            lte: this.datePicker.monthRange().endOfMonth,
+            gte: this.datePicker.monthRange().startOfMonth,
+          },
+        },
+      })
+      .then((data) => ({
+        count: data,
+      }))
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return totalCost;
   }
 }
