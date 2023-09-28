@@ -207,6 +207,23 @@ export class UsersService {
     return users;
   }
 
+  async countUsersByRole() {
+    const users = await this.prisma.user
+      .groupBy({
+        by: ['role'],
+
+        _count: {
+          role: true,
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return users;
+  }
+
   async getUserByRoleAndFacility(data: GetUserByRoleAndFacility) {
     const { facilityId, role } = data;
 

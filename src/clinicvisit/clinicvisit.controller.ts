@@ -76,4 +76,11 @@ export class ClinicvisitController {
   countVisit() {
     return this.clinicvisitService.visitByFacility();
   }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('monthly/count')
+  monthlyClinicVisit() {
+    return this.clinicvisitService.monthlyClinicVisit();
+  }
 }
