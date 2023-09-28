@@ -49,4 +49,11 @@ export class SendsmsController {
   monthlySMS() {
     return this.smsService.monthlySMS();
   }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('count/all')
+  allSMSCount() {
+    return this.smsService.allSMSCount();
+  }
 }
