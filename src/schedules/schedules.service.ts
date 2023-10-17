@@ -250,7 +250,9 @@ export class SchedulesService {
 
     const { date, title } = data;
 
-    const time = new Date(date).toLocaleString();
+    const time = new Date(date).toLocaleString('en-US', {
+      timeZone: 'Africa/Nairobi',
+    });
 
     const message =
       'Hi ' +
