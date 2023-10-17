@@ -308,7 +308,9 @@ export class SchedulesService {
 
     const { name } = facility;
 
-    const time = new Date(date).toLocaleString();
+    const time = new Date(date).toLocaleString('en-US', {
+      timeZone: 'Africa/Nairobi',
+    });
 
     let message = '';
 
