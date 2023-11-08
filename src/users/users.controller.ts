@@ -121,4 +121,9 @@ export class UsersController {
   userDistribution() {
     return this.usersService.countUsersByRole();
   }
+
+  @Get('individual')
+  getIndividual() {
+    return this.usersService.getUser();
+  }
 }

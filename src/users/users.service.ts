@@ -453,6 +453,37 @@ export class UsersService {
     return facilityUsers;
   }
 
+  async getUser() {
+    const id = this.userHelper.getUser().id;
+
+    const user = await this.prisma.user
+      .findUnique({
+        where: {
+          id,
+        },
+
+        include: {
+          Facility: {
+            select: {
+              name: true,
+            },
+          },
+        },
+      })
+      .then((data) => {
+        if (!data) {
+          throw new NotFoundException('Invalid user');
+        } else {
+          return data;
+        }
+      })
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return user;
+  }
+
   @OnEvent('password.request')
   async handlePasswordRequest(data: PasswordResetRequestEvent) {
     const { email } = data;
