@@ -114,6 +114,13 @@ export class FollowupService {
               title: true,
               description: true,
               date: true,
+              mother: {
+                select: {
+                  f_name: true,
+                  l_name: true,
+                  phone_number: true,
+                },
+              },
             },
           },
         },
