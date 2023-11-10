@@ -105,6 +105,7 @@ export class FollowupService {
       .findMany({
         where: {
           chvId,
+          status: 'Sent',
         },
 
         include: {
@@ -112,6 +113,7 @@ export class FollowupService {
             select: {
               title: true,
               description: true,
+              date: true,
             },
           },
         },

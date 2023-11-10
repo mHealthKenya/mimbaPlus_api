@@ -217,6 +217,15 @@ export class SchedulesService {
             in: mothers.map((item) => item.id),
           },
         },
+
+        include: {
+          mother: {
+            select: {
+              f_name: true,
+              l_name: true,
+            },
+          },
+        },
       })
       .then((data) => data)
       .catch((err) => {
