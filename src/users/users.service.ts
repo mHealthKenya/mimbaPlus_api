@@ -353,6 +353,10 @@ export class UsersService {
           role: Roles.MOTHER,
           createdById: chvId,
         },
+
+        orderBy: {
+          createdAt: 'desc',
+        },
       })
       .then((data) => data)
       .catch((err) => {
