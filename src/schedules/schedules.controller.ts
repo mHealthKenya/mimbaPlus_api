@@ -56,6 +56,13 @@ export class SchedulesController {
   }
 
   @UseGuards(RolesGuard)
+  @UserRoles(Roles.MOTHER)
+  @Get('individual')
+  findIndividualSchedules() {
+    return this.schedulesService.findByMother();
+  }
+
+  @UseGuards(RolesGuard)
   @UserRoles(Roles.CHV)
   @Get('appointments')
   findAppointments() {

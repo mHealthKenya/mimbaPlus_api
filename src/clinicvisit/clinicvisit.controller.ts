@@ -83,4 +83,11 @@ export class ClinicvisitController {
   monthlyClinicVisit() {
     return this.clinicvisitService.monthlyClinicVisit();
   }
+
+  @Get('mother')
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.MOTHER)
+  motherVisits() {
+    return this.clinicvisitService.findVisitsByMother();
+  }
 }

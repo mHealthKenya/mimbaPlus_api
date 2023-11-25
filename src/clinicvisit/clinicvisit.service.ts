@@ -3,12 +3,14 @@ import { CreateClinicvisitDto } from './dto/create-clinicvisit.dto';
 import { UpdateClinicvisitDto } from './dto/update-clinicvisit.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { DatePicker } from '../helpers/date-picker';
+import { UserHelper } from '../helpers/user-helper';
 
 @Injectable()
 export class ClinicvisitService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly datePicker: DatePicker,
+    private readonly userHelper: UserHelper,
   ) {}
   async create(createClinicvisitDto: CreateClinicvisitDto) {
     const newVisit = await this.prismaService.clinicVisit
@@ -219,6 +221,51 @@ export class ClinicvisitService {
       });
 
     return visits;
+  }
+
+  async findVisitsByMother() {
+    const id = this.userHelper.getUser().id;
+
+    const user = await this.prismaService.user
+      .findUnique({
+        where: {
+          id,
+        },
+
+        select: {
+          BioData: {
+            include: {
+              ClinicVisit: {
+                select: {
+                  id: true,
+                  weight: true,
+                  hiv: true,
+                  hbLevel: true,
+                  rhesusFactor: true,
+                  bloodGroup: true,
+                  urinalysis: true,
+                  vdrl: true,
+                  bloodRBS: true,
+                  TB: true,
+                  hepatitisB: true,
+                  notes: true,
+                  date: true,
+                },
+
+                orderBy: {
+                  date: 'desc',
+                },
+              },
+            },
+          },
+        },
+      })
+      .then((data) => data)
+      .catch((err) => {
+        throw new BadRequestException(err);
+      });
+
+    return user;
   }
 
   async update(data: UpdateClinicvisitDto) {
