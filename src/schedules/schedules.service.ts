@@ -104,7 +104,7 @@ export class SchedulesService {
         },
 
         orderBy: {
-          updatedAt: 'desc',
+          date: 'asc',
         },
       })
       .then((data) => data)
