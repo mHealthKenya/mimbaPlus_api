@@ -171,6 +171,10 @@ export class UsersService {
 
     const { email, password } = credentials;
 
+    if (!email || !password) {
+      throw new BadRequestException('Email and Password are required');
+    }
+
     const user = await this.prisma.user.findUnique({
       where: {
         email,

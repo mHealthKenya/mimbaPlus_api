@@ -26,6 +26,7 @@ export class LoginMiddleware implements NestMiddleware {
 
         next();
       } catch (error) {
+        this.user.setUser(undefined);
         next();
       }
     } else {
