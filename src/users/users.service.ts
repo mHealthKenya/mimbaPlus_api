@@ -11,7 +11,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { emailBodyPass } from '../helpers/password-requested-email';
 import { SendEmail } from '../helpers/send-email';
 import { emailBody } from '../helpers/user-created-email';
-import { UserHelper } from '../helpers/user-helper';
+import { User, UserHelper } from '../helpers/user-helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dto';
@@ -111,7 +111,64 @@ export class UsersService {
     return allUsers;
   }
 
+  async userLogin(user: User) {
+    if (!user) {
+      throw new BadRequestException('Invalid email or password');
+    }
+
+    const token = await jwt.sign(
+      {
+        email: user.email,
+        id: user.id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: '1d',
+      },
+    );
+
+    const rToken = await jwt.sign(
+      {
+        email: user.email,
+        id: user.id,
+        role: user.role,
+      },
+      process.env.JWT_REFRESH,
+      {
+        expiresIn: '90d',
+      },
+    );
+
+    return {
+      token,
+      refreshToken: rToken,
+    };
+  }
+
   async loginManagement(credentials: LoginManagementDto) {
+    const userL = await this.userHelper.getUser();
+
+    if (userL !== undefined) {
+      const { id } = userL;
+
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id,
+        },
+      });
+
+      delete user.password;
+
+      const val = await this.userLogin(userL);
+
+      return {
+        message: 'User logged in successfully',
+        ...val,
+        user,
+      };
+    }
+
     const { email, password } = credentials;
 
     const user = await this.prisma.user.findUnique({
@@ -142,11 +199,24 @@ export class UsersService {
       },
     );
 
+    const rToken = await jwt.sign(
+      {
+        email: user.email,
+        id: user.id,
+        role: user.role,
+      },
+      process.env.JWT_REFRESH,
+      {
+        expiresIn: '90d',
+      },
+    );
+
     delete user.password;
 
     return {
       message: 'User logged in successfully',
       token,
+      refreshToken: rToken,
       user,
     };
   }
