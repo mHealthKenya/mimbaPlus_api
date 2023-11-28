@@ -191,36 +191,19 @@ export class UsersService {
       throw new BadRequestException('Invalid email or password');
     }
 
-    const token = await jwt.sign(
-      {
-        email: user.email,
-        id: user.id,
-        role: user.role,
-      },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: '1d',
-      },
-    );
+    const { id, role } = user;
 
-    const rToken = await jwt.sign(
-      {
-        email: user.email,
-        id: user.id,
-        role: user.role,
-      },
-      process.env.JWT_REFRESH,
-      {
-        expiresIn: '90d',
-      },
-    );
+    const val = await this.userLogin({
+      id,
+      role,
+      email,
+    });
 
     delete user.password;
 
     return {
       message: 'User logged in successfully',
-      token,
-      refreshToken: rToken,
+      ...val,
       user,
     };
   }

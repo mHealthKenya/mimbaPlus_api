@@ -47,5 +47,9 @@ export class CreateBiodatumDto {
 
   @IsOptional()
   @IsNumberString()
-  previous_pregnancies?: number;
+  gravidity?: number;
+
+  @IsOptional()
+  @IsNumberString()
+  parity?: number;
 }

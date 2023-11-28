@@ -52,6 +52,7 @@ model BioData {
   height                 Float
   weight                 Float
   active                 Boolean       @default(true)
+  parity                 Int?
   age                    Float
   last_monthly_period    DateTime
   expected_delivery_date DateTime
@@ -59,7 +60,7 @@ model BioData {
   last_clinic_visit      DateTime
   facility               Facility      @relation(fields: [facilityId], references: [id])
   facilityId             String
-  previous_pregnancies   Float         @default(0)
+  gravidity              Float?         @default(0)
   createdBy              User          @relation(fields: [createdById], references: [id], "createdBy")
   createdById            String
   updatedBy              User          @relation(fields: [updatedById], references: [id], "updatedBy")

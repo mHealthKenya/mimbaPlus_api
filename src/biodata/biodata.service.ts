@@ -27,9 +27,8 @@ export class BiodataService {
           ),
           pregnancy_period: +createBiodatumDto.pregnancy_period,
           last_clinic_visit: new Date(createBiodatumDto.last_clinic_visit),
-          previous_pregnancies: createBiodatumDto.previous_pregnancies
-            ? +createBiodatumDto.previous_pregnancies
-            : 0,
+          gravidity: createBiodatumDto?.gravidity || 0,
+          parity: createBiodatumDto?.parity || 0,
           createdById: this.userHelper.getUser().id,
           updatedById: this.userHelper.getUser().id,
         },
@@ -44,9 +43,8 @@ export class BiodataService {
           ),
           pregnancy_period: +createBiodatumDto.pregnancy_period,
           last_clinic_visit: new Date(createBiodatumDto.last_clinic_visit),
-          previous_pregnancies: createBiodatumDto.previous_pregnancies
-            ? +createBiodatumDto.previous_pregnancies
-            : 0,
+          gravidity: createBiodatumDto?.gravidity || 0,
+          parity: createBiodatumDto?.parity || 0,
           createdById: this.userHelper.getUser().id,
           updatedById: this.userHelper.getUser().id,
         },
@@ -134,9 +132,8 @@ export class BiodataService {
           pregnancy_period: data.pregnancy_period && +data.pregnancy_period,
           last_clinic_visit:
             data.last_clinic_visit && new Date(data.last_clinic_visit),
-          previous_pregnancies: data.previous_pregnancies
-            ? +data.previous_pregnancies
-            : 0,
+          gravidity: data?.gravidity || 0,
+          parity: data?.parity || 0,
           createdById: this.userHelper.getUser().id,
           updatedById: this.userHelper.getUser().id,
         },
