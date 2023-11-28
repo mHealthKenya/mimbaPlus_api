@@ -1,8 +1,10 @@
 import {
   IsDateString,
   IsNotEmpty,
+  IsNumber,
   IsNumberString,
   IsOptional,
+  IsPositive,
   IsString,
   Matches,
 } from 'class-validator';
@@ -46,10 +48,12 @@ export class CreateBiodatumDto {
   facilityId: string;
 
   @IsOptional()
-  @IsNumberString()
+  @IsNumber()
+  @IsPositive()
   gravidity?: number;
 
   @IsOptional()
-  @IsNumberString()
+  @IsNumber()
+  @IsPositive()
   parity?: number;
 }
