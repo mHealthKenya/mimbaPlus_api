@@ -60,7 +60,7 @@ model BioData {
   last_clinic_visit      DateTime
   facility               Facility      @relation(fields: [facilityId], references: [id])
   facilityId             String
-  gravidity              Float?         @default(0)
+  gravidity              Float?        @default(0)
   createdBy              User          @relation(fields: [createdById], references: [id], "createdBy")
   createdById            String
   updatedBy              User          @relation(fields: [updatedById], references: [id], "updatedBy")
@@ -72,21 +72,20 @@ model BioData {
 
 //TODO Ask for details to be captured in registering a facility
 model Facility {
-  id                   String                @id @default(cuid())
-  name                 String                @unique
-  BioData              BioData[]
-  Appointments         Appointments[]
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  status               String                @default("Active")
-  FollowUpRequests     FollowUpRequests[]
-  LocationCoordinates  LocationCoordinates[]
-  users                User[]
-  Schedule             Schedule[]
-  ClinicVisit          ClinicVisit[]
-  BirthPlan            BirthPlan[]
-  Alternative_Facility BirthPlan[]           @relation("alternative_facility")
-  Enquiries            Enquiries[]
+  id                  String                @id @default(cuid())
+  name                String                @unique
+  BioData             BioData[]
+  Appointments        Appointments[]
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  status              String                @default("Active")
+  FollowUpRequests    FollowUpRequests[]
+  LocationCoordinates LocationCoordinates[]
+  users               User[]
+  Schedule            Schedule[]
+  ClinicVisit         ClinicVisit[]
+  BirthPlan           BirthPlan[]
+  Enquiries           Enquiries[]
 }
 
 model Appointments {
@@ -224,13 +223,11 @@ model ClinicVisit {
 }
 
 model BirthPlan {
-  id                             String    @id @default(cuid())
-  mother                         User      @relation(fields: [motherId], references: [id])
-  motherId                       String    @unique
-  facility                       Facility  @relation(fields: [facilityId], references: [id])
+  id                             String   @id @default(cuid())
+  mother                         User     @relation(fields: [motherId], references: [id])
+  motherId                       String   @unique
+  facility                       Facility @relation(fields: [facilityId], references: [id])
   facilityId                     String
-  alternative_facility           Facility? @relation(fields: [alternative_facility_id], references: [id], "alternative_facility")
-  alternative_facility_id        String?
   delivery_mode                  String
   support_person_name            String?
   support_person_phone           String?
@@ -241,11 +238,12 @@ model BirthPlan {
   blood_donor_phone              String?
   emergency_decision_maker_phone String?
   emergency_decision_maker_name  String?
-  delivery_bag                   Boolean   @default(false)
+  delivery_bag                   Boolean  @default(false)
   emergency_cs_plan              String?
   savings_plan                   String?
-  createdAt                      DateTime  @default(now())
-  updatedAr                      DateTime  @updatedAt
+  other_facility                 String?
+  createdAt                      DateTime @default(now())
+  updatedAr                      DateTime @updatedAt
 }
 
 model ConsentForm {

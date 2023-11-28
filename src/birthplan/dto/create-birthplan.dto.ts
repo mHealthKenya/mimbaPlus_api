@@ -11,7 +11,7 @@ export class CreateBirthplanDto {
 
   @IsOptional()
   @IsString()
-  alternative_facility_id?: string;
+  other_facility?: string;
 
   @IsNotEmpty()
   @IsString()
