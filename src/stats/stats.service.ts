@@ -210,4 +210,35 @@ export class StatsService {
       mothersRegisteredThisMonth: mothers,
     };
   }
+
+  async totalEnquiries() {
+    const senderId = this.userHelper.getUser().id;
+
+    const enquiries = await this.prisma.enquiries.count({
+      where: {
+        senderId,
+      },
+    });
+
+    return {
+      totalEnquiries: enquiries,
+    };
+  }
+
+  async totalMonthlyEnquiries() {
+    const senderId = this.userHelper.getUser().id;
+    const enquiries = await this.prisma.enquiries.count({
+      where: {
+        senderId,
+        createdAt: {
+          lte: this.datePicker.monthRange().endOfMonth,
+          gte: this.datePicker.monthRange().startOfMonth,
+        },
+      },
+    });
+
+    return {
+      enquiriesThisMonth: enquiries,
+    };
+  }
 }

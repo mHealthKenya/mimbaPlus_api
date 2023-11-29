@@ -77,4 +77,18 @@ export class StatsController {
   chvMothersRegisteredThisMonth() {
     return this.statsService.chvMothersRegisteredMonthly();
   }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.CHV)
+  @Get('enquiries')
+  enquiries() {
+    return this.statsService.totalEnquiries();
+  }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.CHV)
+  @Get('monthlyenquiries')
+  totalEnquiries() {
+    return this.statsService.totalMonthlyEnquiries();
+  }
 }
