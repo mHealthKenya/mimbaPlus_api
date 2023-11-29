@@ -4,6 +4,7 @@
     "Biodatum",
     "birthplan",
     "byid",
+    "chvfollowups",
     "chvmothers",
     "chvs",
     "chvtarget",
@@ -12,6 +13,10 @@
     "facilitychvdistribution",
     "facilitycount",
     "facilitydistribution",
+    "monthlychvmothers",
+    "monthlymothers",
+    "monthlyvisits",
+    "motherschv",
     "passwordrequest",
     "roleandfacility",
     "rolescount",
@@ -19,7 +24,11 @@
     "samplefacilityid",
     "sampleid",
     "samplescheduleid",
+    "scheduledist",
     "sendsms",
+    "totalchvs",
+    "totalmothers",
+    "totalvisits",
     "vdrl"
   ]
 }

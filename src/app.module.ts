@@ -15,6 +15,7 @@ import { SendsmsModule } from './sendsms/sendsms.module';
 import { TargetsModule } from './targets/targets.module';
 import { UsersModule } from './users/users.module';
 import { EnquiriesModule } from './enquiries/enquiries.module';
+import { StatsModule } from './stats/stats.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { EnquiriesModule } from './enquiries/enquiries.module';
     TargetsModule,
     SendsmsModule,
     EnquiriesModule,
+    StatsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
