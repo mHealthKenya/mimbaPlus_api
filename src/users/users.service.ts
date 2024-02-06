@@ -411,6 +411,14 @@ export class UsersService {
           createdById: chvId,
         },
 
+        include: {
+          BioData: {
+            select: {
+              expected_delivery_date: true,
+            },
+          },
+        },
+
         orderBy: {
           createdAt: 'desc',
         },
