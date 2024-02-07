@@ -62,4 +62,20 @@ export class CreateClinicvisitDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @IsOptional()
+  @IsString()
+  treatment?: string;
+
+  @IsOptional()
+  @IsDateString()
+  hivTestDate?: string;
+
+  @IsOptional()
+  @IsString()
+  tetanus?: string;
+
+  @IsOptional()
+  @IsDateString()
+  tetanusInjectionDate?: string;
 }
