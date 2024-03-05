@@ -167,11 +167,11 @@ export class FollowupService {
       chvName +
       '. You have been requested to conduct a followup for ' +
       motherName +
-      ' her phone number is ' +
+      '. Her phone number is ' +
       motherPhone +
-      ' Please ensure she visits ' +
+      '. Please ensure she visits ' +
       facilityName +
-      ' at the earliest time possible';
+      ' at the earliest time possible.';
 
     this.smsService.sendSMSFn({
       phoneNumber: '+' + phone_number,
