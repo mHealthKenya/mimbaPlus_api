@@ -387,6 +387,17 @@ export class SchedulesService {
       case ScheduleStatus.FOLLOW_UP:
         break;
 
+      case ScheduleStatus.COMPLETED:
+        await this.prisma.followUp.update({
+          where: {
+            scheduleId: schedule.id,
+          },
+
+          data: {
+            status: FollowUpStatus.Completed,
+          },
+        });
+
       default:
         message =
           'Hi ' +
