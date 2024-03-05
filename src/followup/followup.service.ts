@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { UserHelper } from '../helpers/user-helper';
 import { PrismaService } from '../prisma/prisma.service';
 import { ScheduleStatus } from '../schedules/schedules.service';
@@ -76,17 +76,16 @@ export class FollowupService {
 
     const data = await this.prisma
       .$transaction([newFollowUp, updateVisitStatus])
-      .then(() => {
-        this.eventEmitter.emit(
-          'm+:followup.created',
-          new CreateFollowUpEvent({
+      .then(async () => {
+        await this.sendSMS({
+          data: {
             motherName: schedule.mother.f_name + ' ' + schedule.mother.l_name,
             motherPhone: schedule.mother.phone_number,
             chvName: user.f_name + ' ' + user.l_name,
             chvPhone: user.phone_number,
             facilityName: user.Facility.name,
-          }),
-        );
+          },
+        });
         return {
           status: 'success',
           message: 'Follow up request successfully sent',
@@ -152,8 +151,7 @@ export class FollowupService {
     return updated;
   }
 
-  @OnEvent('m+:followup.created')
-  async handleScheduleCreated(props: CreateFollowUpEvent) {
+  async sendSMS(props: CreateFollowUpEvent) {
     const { data } = props;
 
     const {
@@ -175,7 +173,7 @@ export class FollowupService {
       facilityName +
       ' at the earliest time possible';
 
-    await this.smsService.sendSMSFn({
+    this.smsService.sendSMSFn({
       phoneNumber: '+' + phone_number,
       message: message,
     });

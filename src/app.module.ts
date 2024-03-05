@@ -20,15 +20,7 @@ import { StatsModule } from './stats/stats.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    EventEmitterModule.forRoot({
-      maxListeners: 100,
-      wildcard: false,
-      delimiter: '.',
-      newListener: false,
-      removeListener: false,
-      verboseMemoryLeak: false,
-      ignoreErrors: false,
-    }),
+    EventEmitterModule.forRoot(),
     UsersModule,
     FacilitiesModule,
     BiodataModule,

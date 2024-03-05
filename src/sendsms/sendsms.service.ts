@@ -32,30 +32,33 @@ export class SendsmsService {
     const options = {
       to: [phoneNumber],
       message,
-      from: '33861',
+      from: '22210',
     };
 
     try {
       const sent = await this.sms.send(options);
 
       const cost = sent.SMSMessageData.Recipients[0].cost.split('KES ')[1];
-      const messagePart =
-        +sent.SMSMessageData.Message.split('Message parts: ')[1];
 
       const val: Message = {
         status: sent.SMSMessageData.Recipients[0].status,
         statusCode: sent.SMSMessageData.Recipients[0].statusCode,
         messageId: sent.SMSMessageData.Recipients[0].messageId,
         cost: +cost,
-        messagePart,
       };
 
-      await this.prisma.message.create({
-        data: {
-          ...val,
-        },
-      });
+      await this.prisma.message
+        .create({
+          data: {
+            ...val,
+          },
+        })
+        .then((data) => data)
+        .catch((err) => {
+          console.log('err', err);
+        });
     } catch (error) {
+      console.log(error);
       const statusCode = error?.response?.status;
       const status = error?.response?.statusText;
 
