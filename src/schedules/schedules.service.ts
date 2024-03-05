@@ -194,7 +194,6 @@ export class SchedulesService {
       })
       .then((data) => {
         if (chvId && rest?.status === ScheduleStatus.FOLLOW_UP) {
-          console.log('here');
           this.eventEmitter.emit(
             'm+:schedule.updated-followup',
             new ScheduleUpdatedEvent({
@@ -446,7 +445,19 @@ export class SchedulesService {
       },
     });
 
-    const [schedule, user] = await Promise.all([scheduleD, userD]);
+    const fUp = this.prisma.followUp.create({
+      data: {
+        scheduleId: id,
+        chvId,
+      },
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [schedule, user, followUp] = await Promise.all([
+      scheduleD,
+      userD,
+      fUp,
+    ]);
 
     const chvName = user?.f_name + ' ' + user?.l_name;
 
@@ -464,11 +475,11 @@ export class SchedulesService {
       chvName +
       '. You have been requested to conduct a followup for ' +
       motherName +
-      ' her phone number is ' +
+      '. Her phone number is ' +
       motherPhone +
       ' Please ensure she visits ' +
       facilityName +
-      ' at the earliest time possible';
+      ' at the earliest time possible.';
 
     await this.smsService.sendSMSFn({
       phoneNumber: '+' + phone_number,
