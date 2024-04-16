@@ -5,13 +5,38 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class WalletService {
-  constructor(private prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
 
-  createWallet(createWalletDto: CreateWalletDto){
-    const newWallet = this.prismaService.wallet.create({ data: createWalletDto})
+  async createWallet(createWalletDto: CreateWalletDto){
+    const newWallet = await this.prismaService.wallet.create({ data: {...createWalletDto, balance : 0 }}).then((data) => {
+      return data;
+    }).catch((err) => {throw new Error(err)})
     return newWallet;
   }
+
+  async generateToken(userId: string, amount: number): Promise<number> {
+    const user = await this.prismaService.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const currentBalance = await this.prismaService.wallet.findUnique({ where: { id: userId } });
+    let curbal = 0 
+
+    if(currentBalance){
+      curbal = currentBalance.balance
+    }
+
+    const newBalance = await this.prismaService.wallet.update({
+      where: { id: userId },
+      data: { balance: curbal + amount },
+    })
+
+    // Ensure the amount is at least 1
+    return newBalance.balance;
+  }
+
 
   create(createWalletDto: CreateWalletDto) {
     return 'This action adds a new wallet';

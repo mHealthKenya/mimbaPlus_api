@@ -17,6 +17,7 @@ import { UsersModule } from './users/users.module';
 import { EnquiriesModule } from './enquiries/enquiries.module';
 import { StatsModule } from './stats/stats.module';
 import { WalletModule } from './wallet/wallet.module';
+import { TransactionsModule } from './transactions/transactions.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { WalletModule } from './wallet/wallet.module';
     EnquiriesModule,
     StatsModule,
     WalletModule,
+    TransactionsModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
