@@ -39,10 +39,10 @@ $ yarn install
 $ yarn run start
 
 # watch mode
-$ yarn run start:dev
+$ yarn run dev
 
 # production mode
-$ yarn run start:prod
+$ yarn run prod
 ```
 
 ## Test
@@ -64,10 +64,8 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 ## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- Author - [Joel Wekesa](https://github.com/JoelWekesa)
 
 ## License
 
-Nest is [MIT licensed](LICENSE).
+This project [MIT licensed](LICENSE).
