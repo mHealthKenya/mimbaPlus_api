@@ -1,11 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateWalletDto } from './dto/create-wallet.dto';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateTransactionDto } from 'src/transactions/dto/create-transaction.dto';
+
+enum TransactionType {
+  DEPOSIT,
+  PAYMENT,
+  REVERSAL,
+  CHECKOUT
+}
 
 @Injectable()
 export class WalletService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService,) {}
 
 
   async createWallet(createWalletDto: CreateWalletDto){
@@ -14,6 +22,92 @@ export class WalletService {
     }).catch((err) => {throw new Error(err)})
     return newWallet;
   }
+
+  async getWalletByUserId(userId: string){
+    try {
+      const userWallet = await this.prismaService.wallet.findUnique({ where: {
+        id: userId
+      }})
+  
+      if(!userWallet){
+        throw new Error('User wallet not found');
+      }
+      return userWallet;
+    } catch(error){
+      throw new Error(error);
+    }
+    
+  }
+
+  async transferTokenFromMotherToFacility(userId: string, facilityId: string, amount: number){
+    try {
+      const userWallet = await this.prismaService.wallet.findUnique({ where: {
+        userId: userId
+      }})
+
+      const facilityWallet = await this.prismaService.wallet.findUnique({ where: {
+        userId: facilityId
+      }})
+
+      if(!userWallet || !facilityWallet) {throw new NotFoundException('User/Facility not found')}
+
+      if(userWallet.balance < amount) {throw new Error('Insufficient funds')}
+
+      const newUserBal = userWallet.balance - amount;
+      const newFacilityBal = facilityWallet.balance + amount;
+
+      await this.prismaService.wallet.update({
+        where: {
+          id: userId
+        },
+        data: {
+          balance: newUserBal
+        }
+      })
+
+      await this.prismaService.wallet.update({
+        where: {
+          id: facilityId
+        },
+        data: {
+          balance: newFacilityBal
+        }
+      })
+
+      const userTransRecord = await this.prismaService.transaction.create({
+        data: {
+          userId: userId,
+          facilityId: facilityId,
+          description: `Payment to ${facilityId}`,
+          amount: -amount,
+          transaction_date: new Date(),
+          type: TransactionType.PAYMENT,
+        }
+      })
+
+      const facilityTransRecord = await this.prismaService.transaction.create({
+        data: {
+          userId: userId,
+          facilityId: facilityId,
+          amount: +amount,
+          description: `Payment from ${userId}`,
+          transaction_date: new Date(),
+          type: TransactionType.PAYMENT,
+        }
+      })
+
+      return {
+        userWallet: {...userWallet, balance: newUserBal},
+        facilityWallet: {...facilityWallet, balance: newFacilityBal},
+        userTransRecord: userTransRecord,
+        facilityTransRecord: facilityTransRecord
+      }
+
+    } catch(error) {
+      throw new Error(error);
+    } 
+  }
+
 
   async generateToken(userId: string, amount: number): Promise<number> {
     const user = await this.prismaService.user.findUnique({ where: { id: userId } });
@@ -37,26 +131,15 @@ export class WalletService {
     return newBalance.balance;
   }
 
+  async getWalletBalance(walletId: string) {
+    const wallet = await this.prismaService.wallet.findUnique({ where: { id: walletId } });
+    if (!wallet) {
+      throw new Error('Wallet not found');
+    }
 
-  create(createWalletDto: CreateWalletDto) {
-    return 'This action adds a new wallet';
-  }
-
-  findAll() {
-    return `This action returns all wallet`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} wallet`;
-  }
-
-  update(id: number, updateWalletDto: UpdateWalletDto) {
-    return `This action updates a #${id} wallet`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} wallet`;
+    return wallet.balance;
   }
 
   
+
 }

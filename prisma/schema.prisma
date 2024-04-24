@@ -89,6 +89,8 @@ model Facility {
   ClinicVisit         ClinicVisit[]
   BirthPlan           BirthPlan[]
   Enquiries           Enquiries[]
+  wallet Wallet[] @relation("wallet")
+  walletId    String?
 }
 
 model Appointments {
@@ -292,24 +294,29 @@ model Wallet {
   balance Float @default(0.0)
   user User? @relation(fields: [userId], references: [id], "wallet")
   userId String?
-  transaction Transaction[]
+  facility Facility? @relation(fields: [facilityId], references: [id], "wallet")
+  facilityId String?
 }
 
 model Transaction {
   id             String   @id @default(cuid())
+  userId String
+  facilityId String
   amount         Float
   description String
   invoice String?
   type           TransactionType
-  wallet Wallet @relation(fields: [walletId], references: [id])
-  walletId       String
+  status String
+  transactionDate DateTime
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum TransactionType {
   DEPOSIT
   PAYMENT
   REVERSAL
+  CASHOUT
 }
 
 //TODO ask to create a table to record clinical visits
