@@ -1,11 +1,6 @@
-import { IsEnum, IsNotEmpty, IsString } from "class-validator";
+import { TransactionType } from "@prisma/client";
+import { IsEnum, IsNotEmpty, IsNumber, IsString } from "class-validator";
 
-enum TransactionType {
-  DEPOSIT,
-  PAYMENT,
-  REVERSAL,
-  CHECKOUT
-}
 
 export class CreateTransactionDto {
 
@@ -18,8 +13,8 @@ export class CreateTransactionDto {
   facilityId: string;
 
   @IsNotEmpty()
-  @IsString()
-  amount: string;
+  @IsNumber()
+  amount: number;
 
   @IsNotEmpty()
   @IsString()

@@ -1,15 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateWalletDto } from './dto/create-wallet.dto';
-import { UpdateWalletDto } from './dto/update-wallet.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateTransactionDto } from 'src/transactions/dto/create-transaction.dto';
+import { TransactionType } from '@prisma/client';
 
-enum TransactionType {
-  DEPOSIT,
-  PAYMENT,
-  REVERSAL,
-  CHECKOUT
-}
 
 @Injectable()
 export class WalletService {
@@ -42,11 +35,11 @@ export class WalletService {
   async transferTokenFromMotherToFacility(userId: string, facilityId: string, amount: number){
     try {
       const userWallet = await this.prismaService.wallet.findUnique({ where: {
-        userId: userId
+        id: userId
       }})
 
       const facilityWallet = await this.prismaService.wallet.findUnique({ where: {
-        userId: facilityId
+        id: facilityId
       }})
 
       if(!userWallet || !facilityWallet) {throw new NotFoundException('User/Facility not found')}
@@ -79,8 +72,9 @@ export class WalletService {
           userId: userId,
           facilityId: facilityId,
           description: `Payment to ${facilityId}`,
+          status: 'pending',
           amount: -amount,
-          transaction_date: new Date(),
+          transactionDate: new Date(),
           type: TransactionType.PAYMENT,
         }
       })
@@ -89,10 +83,11 @@ export class WalletService {
         data: {
           userId: userId,
           facilityId: facilityId,
-          amount: +amount,
-          description: `Payment from ${userId}`,
-          transaction_date: new Date(),
+          description: `Payment to ${facilityId}`,
+          amount: -amount,
+          status: 'pending',
           type: TransactionType.PAYMENT,
+          transactionDate: new Date(),
         }
       })
 

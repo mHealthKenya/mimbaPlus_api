@@ -7,28 +7,27 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
-  @Post()
-  create(@Body() createTransactionDto: CreateTransactionDto) {
-    return this.transactionsService.create(createTransactionDto);
+  @Patch('reversal/:userId/:facilityId/:transactionId')
+  async reversalTransfer(
+    @Param('userId') userId: string,
+    @Param('facilityId') facilityId: string,
+    @Param('transactionId') transactionId: string,
+  ) {
+    return this.transactionsService.reversalTransfer(userId, facilityId, transactionId);
   }
 
-  @Get()
-  findAll() {
-    return this.transactionsService.findAll();
+  @Get('facility/:facilityId')
+  async facilityTransactionHistory(@Param('facilityId') facilityId: string) {
+    return this.transactionsService.facilityTransctionHistory(facilityId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.transactionsService.findOne(+id);
+  @Get('mother/:userId')
+  async motherTransactionHistory(@Param('userId') userId: string) {
+    return this.transactionsService.motherTransctionHistory(userId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTransactionDto: UpdateTransactionDto) {
-    return this.transactionsService.update(+id, updateTransactionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.transactionsService.remove(+id);
+  @Patch('resetFacility/:facilityId')
+  async resetFacilityWalletBalance(@Param('facilityId') facilityId: string) {
+    return this.transactionsService.resetFacilityWalletBalance(facilityId);
   }
 }

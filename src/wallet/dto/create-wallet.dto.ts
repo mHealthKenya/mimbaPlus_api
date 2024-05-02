@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer'; // Import Type decorator for nested validation
-import { CreateTransactionDto } from 'src/transactions/dto/create-transaction.dto';
+import { CreateTransactionDto } from '../../transactions/dto/create-transaction.dto';
 
 export class CreateWalletDto {
   @IsNotEmpty()

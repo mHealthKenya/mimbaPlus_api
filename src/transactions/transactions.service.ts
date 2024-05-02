@@ -2,13 +2,8 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { TransactionType } from '@prisma/client';
 
-enum TransactionType {
-  DEPOSIT,
-  PAYMENT,
-  REVERSAL,
-  CHECKOUT
-}
 
 
 @Injectable()
@@ -120,12 +115,13 @@ export class TransactionsService {
 
     await this.prismaService.transaction.create({
       data: {
-        userId: 'facility_id_here', // Provide the facility user ID
-        amount: -facilityWallet.balance, // Negative balance to indicate a checkout
+        userId: 'facility_id_here', 
+        amount: -facilityWallet.balance, 
         description: 'Facility wallet checkout',
-        transaction_date: new Date(),
-        type: TransactionType.CHECKOUT,
+        status: 'pending',
+        transactionDate: new Date(),
         facilityId: facilityWallet.id,
+        type: TransactionType.CASHOUT,
       },
     });
 
@@ -133,7 +129,4 @@ export class TransactionsService {
       facilityWallet: {...facilityWallet, balance: newFacilityBal}
     }
   }
-
-
-
 }

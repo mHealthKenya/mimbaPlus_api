@@ -1,5 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WalletService } from './wallet.service';
+import { CreateWalletDto } from './dto/create-wallet.dto';
+
+const createWallet: CreateWalletDto = {
+  userId: '',
+  balance: 0,
+}
 
 describe('WalletService', () => {
   let service: WalletService;
