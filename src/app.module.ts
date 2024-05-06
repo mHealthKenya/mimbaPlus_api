@@ -18,6 +18,7 @@ import { EnquiriesModule } from './enquiries/enquiries.module';
 import { StatsModule } from './stats/stats.module';
 import { WalletModule } from './wallet/wallet.module';
 import { TransactionsModule } from './transactions/transactions.module';
+import { OtpModule } from './otp/otp.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { TransactionsModule } from './transactions/transactions.module';
     StatsModule,
     WalletModule,
     TransactionsModule,
+    OtpModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],

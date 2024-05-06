@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateWalletDto } from './dto/create-wallet.dto';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { TransactionType } from '@prisma/client';
+import { OtpService } from '../otp/otp.service';
 
 
 @Injectable()
 export class WalletService {
-  constructor(private readonly prismaService: PrismaService,) {}
+  constructor(private readonly prismaService: PrismaService, private otpService: OtpService) {}
 
 
   async createWallet(createWalletDto: CreateWalletDto){
@@ -32,8 +33,17 @@ export class WalletService {
     
   }
 
-  async transferTokenFromMotherToFacility(userId: string, facilityId: string, amount: number){
+  async transferTokenFromMotherToFacility(userId: string, facilityId: string, amount: number, phone: string){
     try {
+      const puporse = 'MOTHER TO FACITILITY TRANSACTION'
+      const otp = await this.otpService.generateOTPFn(userId, phone, puporse)
+
+      const isOtpVerified = await this.otpService.verifyOTP(userId, otp);
+
+      if(!isOtpVerified){
+        throw new Error('Invalid OTP')
+      }
+
       const userWallet = await this.prismaService.wallet.findUnique({ where: {
         id: userId
       }})
@@ -122,7 +132,7 @@ export class WalletService {
       data: { balance: curbal + amount },
     })
 
-    // Ensure the amount is at least 1
+    
     return newBalance.balance;
   }
 
