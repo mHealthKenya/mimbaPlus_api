@@ -11,10 +11,16 @@ export class WalletService {
 
 
   async createWallet(createWalletDto: CreateWalletDto){
+    const userId = await this.prismaService.user.findUnique({ where: {id: createWalletDto.userId}})
+    
+    if(!userId){
+      throw new NotFoundException('User Not Found')
+    }
+
     const newWallet = await this.prismaService.wallet.create({ data: {...createWalletDto, balance : 0 }}).then((data) => {
       return data;
     }).catch((err) => {throw new Error(err)})
-    return newWallet;
+    return {message: 'Wallet created successfully' ,newWallet};
   }
 
   async getWalletByUserId(userId: string){
