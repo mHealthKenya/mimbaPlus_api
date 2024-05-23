@@ -167,7 +167,7 @@ describe('WalletService', () => {
     }))
   })
 
-  it('should throw an error if OTP verfication is false', async () => {
+  it('should throw an error if OTP verification is false', async () => {
     const userId = 'userId';
     const facilityId = 'facilityId'
     const amount = 100

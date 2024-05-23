@@ -33,13 +33,14 @@ export class WalletController {
     return wallet;
   }
 
-  @Patch('transfer/:userId/:facilityId/:amount')
+  @Patch('transfer/:userId/:phone/:facilityId/:amount')
   async transferTokenFromMotherToFacility(
     @Param('userId') userId: string,
     @Param('facilityId') facilityId: string,
     @Param('amount') amount: number,
+    @Param('phone') phone: string
   ) {
-    return this.walletService.transferTokenFromMotherToFacility(userId, facilityId, amount);
+    return this.walletService.transferTokenFromMotherToFacility(userId, facilityId, amount, phone);
   }
 
   
