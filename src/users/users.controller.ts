@@ -42,8 +42,8 @@ export class UsersController {
     return this.usersService.updateUser(data);
   }
 
-  // @UseGuards(RolesGuard)
-  // @UserRoles(Roles.ADMIN)
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
   @Get('all')
   async getAllUsers() {
     return this.usersService.getAllUsers();

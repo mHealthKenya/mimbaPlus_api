@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, NotFoundException, Query } from '@nestjs/common';
 import { WalletService } from './wallet.service';
-import { CreateWalletDto } from './dto/create-wallet.dto';
+import { CreateWalletDto, GetByWalletDto, TransferTokenDto } from './dto/create-wallet.dto';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
+
+
 
 @Controller('wallet')
 export class WalletController {
@@ -12,34 +14,33 @@ export class WalletController {
     return this.walletService.createWallet(createWalletDto);
   }
 
-  @Post()
-  async generateToken(userId: string, amount: number) {
-    const newBalance = await this.walletService.generateToken(userId, amount);
+  @Get()
+  async getAllWallet(){
+    return this.walletService.getAllWallet();
+  }
+
+  @Post('token')
+  async generateToken(@Body() body: { walletId: string, amount: number }) {
+    const { walletId, amount } = body;
+    const newBalance = await this.walletService.generateToken(walletId, amount);
     return { newBalance };
   }
 
-  @Get('balance/:walletId')
-  async getWalletBalance(@Param('walletId') walletId: string) {
+  @Get('balance')
+  async getWalletBalance(@Query() { walletId}: GetByWalletDto) {
     return this.walletService.getWalletBalance(walletId);
   }
 
 
-  @Get(':userId')
-  async getWalletByUserId(@Param('userId') userId: string) {
+  @Get('user')
+  async getWalletByUserId(@Query() { userId}: GetByWalletDto) {
     const wallet = await this.walletService.getWalletByUserId(userId);
-    if (!wallet) {
-      throw new NotFoundException('Wallet not found');
-    }
     return wallet;
-  }
+  } 
 
   @Patch('transfer/:userId/:phone/:facilityId/:amount')
-  async transferTokenFromMotherToFacility(
-    @Param('userId') userId: string,
-    @Param('facilityId') facilityId: string,
-    @Param('amount') amount: number,
-    @Param('phone') phone: string
-  ) {
+  async transferTokenFromMotherToFacility(@Query() transferTokenDto: TransferTokenDto) {
+    const { userId, facilityId, amount, phone } = transferTokenDto;
     return this.walletService.transferTokenFromMotherToFacility(userId, facilityId, amount, phone);
   }
 

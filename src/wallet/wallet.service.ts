@@ -23,6 +23,15 @@ export class WalletService {
     return {message: 'Wallet created successfully' ,newWallet};
   }
 
+  async getAllWallet(){
+    try{
+      const allWallets = await this.prismaService.wallet.findMany()
+      return allWallets;
+    }catch(error){
+      throw new Error(error);
+    }
+  }
+
   async getWalletByUserId(userId: string){
     try {
       const userWallet = await this.prismaService.wallet.findUnique({ where: {
@@ -30,7 +39,7 @@ export class WalletService {
       }})
   
       if(!userWallet){
-        throw new Error('User wallet not found');
+        throw new NotFoundException()
       }
       return userWallet;
     } catch(error){
@@ -120,35 +129,34 @@ export class WalletService {
   }
 
 
-  async generateToken(userId: string, amount: number): Promise<number> {
-    const user = await this.prismaService.user.findUnique({ where: { id: userId } });
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    const currentBalance = await this.prismaService.wallet.findUnique({ where: { id: userId } });
-    let curbal = 0 
-
-    if(currentBalance){
-      curbal = currentBalance.balance
+  async generateToken(walletId: string, amount: number): Promise<number> {
+    const wallet = await this.prismaService.wallet.findUnique({
+      where: { id: walletId },
+    });
+    if (!wallet) {
+      throw new NotFoundException('Wallet not found');
     }
 
     const newBalance = await this.prismaService.wallet.update({
-      where: { id: userId },
-      data: { balance: curbal + amount },
-    })
+      where: { id: walletId },
+      data: { balance: wallet.balance + amount },
+    });
 
-    
     return newBalance.balance;
   }
 
   async getWalletBalance(walletId: string) {
-    const wallet = await this.prismaService.wallet.findUnique({ where: { id: walletId } });
-    if (!wallet) {
-      throw new Error('Wallet not found');
-    }
+    try{
+      const wallet = await this.prismaService.wallet.findUnique({ where: { id: walletId } });
+      if (!wallet) {
+        throw new Error('Wallet not found');
+      }
 
     return wallet.balance;
+    }catch(error){
+      throw new Error(error);
+    }
+    
   }
 
   
