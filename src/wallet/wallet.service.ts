@@ -10,11 +10,24 @@ export class WalletService {
   constructor(private readonly prismaService: PrismaService, private otpService: OtpService) {}
 
 
-  async createWallet(createWalletDto: CreateWalletDto){
+  async createMotherWallet(createWalletDto: CreateWalletDto){
     const userId = await this.prismaService.user.findUnique({ where: {id: createWalletDto.userId}})
     
     if(!userId){
       throw new NotFoundException('User Not Found')
+    }
+
+    const newWallet = await this.prismaService.wallet.create({ data: {...createWalletDto, balance : 0 }}).then((data) => {
+      return data;
+    }).catch((err) => {throw new Error(err)})
+    return {message: 'Wallet created successfully' ,newWallet};
+  }
+
+  async createFacilityWallet(createWalletDto: CreateWalletDto){
+    const facilityId = await this.prismaService.facility.findUnique({ where: {id: createWalletDto.facilityId}})
+    
+    if(!facilityId){
+      throw new NotFoundException('Facility Not Found')
     }
 
     const newWallet = await this.prismaService.wallet.create({ data: {...createWalletDto, balance : 0 }}).then((data) => {
@@ -48,49 +61,39 @@ export class WalletService {
     
   }
 
-  async transferTokenFromMotherToFacility(userId: string, facilityId: string, amount: number, phone: string){
+  async transferTokenFromMotherToFacility(userId: string, facilityId: string, amount: number, phone: string) {
     try {
-      const puporse = 'MOTHER TO FACITILITY TRANSACTION'
-      const otp = await this.otpService.generateOTPFn(userId, phone, puporse)
-
+      const purpose = 'MOTHER TO FACILITY TRANSACTION';
+      const otp = await this.otpService.generateOTPFn(userId, phone, purpose);
       const isOtpVerified = await this.otpService.verifyOTP(userId, otp);
 
-      if(!isOtpVerified){
-        throw new Error('Invalid OTP')
+      if (!isOtpVerified) {
+        throw new Error('Invalid OTP');
       }
 
-      const userWallet = await this.prismaService.wallet.findUnique({ where: {
-        id: userId
-      }})
+      const userWallet = await this.prismaService.wallet.findFirst({ where: { userId: userId } });
+      const facilityWallet = await this.prismaService.wallet.findFirst({ where: { facilityId: facilityId } });
 
-      const facilityWallet = await this.prismaService.wallet.findUnique({ where: {
-        id: facilityId
-      }})
+      if (!userWallet || !facilityWallet) {
+        throw new NotFoundException('User/Facility not found');
+      }
 
-      if(!userWallet || !facilityWallet) {throw new NotFoundException('User/Facility not found')}
-
-      if(userWallet.balance < amount) {throw new Error('Insufficient funds')}
+      if (userWallet.balance < amount) {
+        throw new Error('Insufficient funds');
+      }
 
       const newUserBal = userWallet.balance - amount;
       const newFacilityBal = facilityWallet.balance + amount;
 
       await this.prismaService.wallet.update({
-        where: {
-          id: userId
-        },
-        data: {
-          balance: newUserBal
-        }
-      })
+        where: { id: userWallet.id },
+        data: { balance: newUserBal },
+      });
 
       await this.prismaService.wallet.update({
-        where: {
-          id: facilityId
-        },
-        data: {
-          balance: newFacilityBal
-        }
-      })
+        where: { id: facilityWallet.id },
+        data: { balance: newFacilityBal },
+      });
 
       const userTransRecord = await this.prismaService.transaction.create({
         data: {
@@ -100,34 +103,32 @@ export class WalletService {
           status: 'pending',
           amount: -amount,
           transactionDate: new Date(),
-          type: TransactionType.PAYMENT,
-        }
-      })
+          type: 'PAYMENT',
+        },
+      });
 
       const facilityTransRecord = await this.prismaService.transaction.create({
         data: {
           userId: userId,
           facilityId: facilityId,
           description: `Payment to ${facilityId}`,
-          amount: -amount,
+          amount: amount,
           status: 'pending',
-          type: TransactionType.PAYMENT,
+          type: 'PAYMENT',
           transactionDate: new Date(),
-        }
-      })
+        },
+      });
 
       return {
-        userWallet: {...userWallet, balance: newUserBal},
-        facilityWallet: {...facilityWallet, balance: newFacilityBal},
-        userTransRecord: userTransRecord,
-        facilityTransRecord: facilityTransRecord
-      }
-
-    } catch(error) {
-      throw new Error(error);
-    } 
+        userWallet: { ...userWallet, balance: newUserBal },
+        facilityWallet: { ...facilityWallet, balance: newFacilityBal },
+        userTransRecord,
+        facilityTransRecord,
+      };
+    } catch (error) {
+      throw new Error(error.message);
+    }
   }
-
 
   async generateToken(walletId: string, amount: number): Promise<number> {
     const wallet = await this.prismaService.wallet.findUnique({

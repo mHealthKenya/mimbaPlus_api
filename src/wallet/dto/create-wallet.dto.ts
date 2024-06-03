@@ -3,9 +3,13 @@ import { Type } from 'class-transformer'; // Import Type decorator for nested va
 import { CreateTransactionDto } from '../../transactions/dto/create-transaction.dto';
 
 export class CreateWalletDto {
-  @IsNotEmpty()
   @IsString()
+  @IsOptional()
   userId: string;
+
+  @IsString()
+  @IsOptional()
+  facilityId: string;
 
   @IsNotEmpty()
   balance: number;

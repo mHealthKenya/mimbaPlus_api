@@ -9,9 +9,14 @@ import { UpdateWalletDto } from './dto/update-wallet.dto';
 export class WalletController {
   constructor(private readonly walletService: WalletService) {}
 
-  @Post()
-  async createWallet(@Body() createWalletDto: CreateWalletDto) {
-    return this.walletService.createWallet(createWalletDto);
+  @Post('mother')
+  async createMotherWallet(@Body() createWalletDto: CreateWalletDto) {
+    return this.walletService.createMotherWallet(createWalletDto);
+  }
+
+  @Post('facility')
+  async createFacilityWallet(@Body() createWalletDto: CreateWalletDto) {
+    return this.walletService.createFacilityWallet(createWalletDto);
   }
 
   @Get()
@@ -38,8 +43,10 @@ export class WalletController {
     return wallet;
   } 
 
-  @Patch('transfer/:userId/:phone/:facilityId/:amount')
-  async transferTokenFromMotherToFacility(@Query() transferTokenDto: TransferTokenDto) {
+  @Patch('transfer')
+  async transferTokenFromMotherToFacility(
+    @Body() transferTokenDto: TransferTokenDto
+  ) {
     const { userId, facilityId, amount, phone } = transferTokenDto;
     return this.walletService.transferTokenFromMotherToFacility(userId, facilityId, amount, phone);
   }

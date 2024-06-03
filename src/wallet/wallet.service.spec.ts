@@ -95,13 +95,13 @@ describe('WalletService', () => {
   });
 
   it('should create a wallet', async () => {
-    const newWallet = await service.createWallet(createWalletDto);
+    const newWallet = await service.createMotherWallet(createWalletDto);
     expect(newWallet.message).toEqual('Wallet created successfully');
   });
 
   it('should throw NotFoundException if user does not exist', async () => {
     mockPrismaService.user.findUnique.mockResolvedValueOnce(null);
-    await expect(service.createWallet(createWalletDto)).rejects.toThrow(NotFoundException);
+    await expect(service.createMotherWallet(createWalletDto)).rejects.toThrow(NotFoundException);
   });
 
   it('should return user wallet if found', async () => {
