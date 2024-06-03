@@ -39,7 +39,7 @@ export class WalletController {
 
   @Get('user')
   async getWalletByUserId(@Query() { userId}: GetByWalletDto) {
-    const wallet = await this.walletService.getWalletByUserId(userId);
+    const wallet = await this.walletService.getWalletsByUserId(userId)
     return wallet;
   } 
 

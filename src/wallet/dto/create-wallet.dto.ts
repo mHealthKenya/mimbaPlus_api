@@ -21,8 +21,8 @@ export class CreateWalletDto {
 }
 
 export class GetByWalletDto {
-  @IsNotEmpty()
   @IsString()
+  @IsOptional()
   walletId: string;
 
   @IsOptional()

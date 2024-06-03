@@ -305,7 +305,7 @@ model Wallet {
   id String @id @default(cuid())
   balance Float @default(0.0)
   user User? @relation(fields: [userId], references: [id], "wallet")
-  userId String?
+  userId String? @unique
   facility Facility? @relation(fields: [facilityId], references: [id], "wallet")
   facilityId String?
 }

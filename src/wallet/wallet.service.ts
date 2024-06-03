@@ -45,20 +45,19 @@ export class WalletService {
     }
   }
 
-  async getWalletByUserId(userId: string){
+  async getWalletsByUserId(userId: string) {
     try {
-      const userWallet = await this.prismaService.wallet.findUnique({ where: {
-        id: userId
-      }})
-  
-      if(!userWallet){
-        throw new NotFoundException()
+      const userWallets = await this.prismaService.wallet.findMany({
+        where: { userId: userId },
+      });
+
+      if (!userWallets.length) {
+        throw new NotFoundException('No wallets found for this user.');
       }
-      return userWallet;
-    } catch(error){
-      throw new Error(error);
+      return userWallets;
+    } catch (error) {
+      throw new Error(error.message);
     }
-    
   }
 
   async transferTokenFromMotherToFacility(userId: string, facilityId: string, amount: number, phone: string) {
