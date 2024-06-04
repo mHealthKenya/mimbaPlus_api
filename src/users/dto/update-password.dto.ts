@@ -1,7 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
-import { PasswordResetRequestDto } from './password-reset-request.dto';
 
-export class UpdatePasswordDto extends PasswordResetRequestDto {
+export class UpdatePasswordDto {
   @IsNotEmpty()
   @IsString()
   code: string;

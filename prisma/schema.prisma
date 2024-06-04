@@ -160,12 +160,11 @@ model LocationCoordinates {
 
 model ResetCode {
   id        String   @id @default(cuid())
-  email     String
-  code      String
+  email     String?
+  code      String   @unique
+  phone     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@unique([email, code])
 }
 
 model Schedule {

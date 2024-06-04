@@ -390,23 +390,23 @@ export class UsersService {
   }
 
   async resetPassword(data: UpdatePasswordDto) {
-    const { code, email, password } = data;
+    const { code, password } = data;
 
     const codeExists = await this.prisma.resetCode.findUnique({
       where: {
-        email_code: { email, code },
+        code,
       },
     });
 
     if (!codeExists) {
-      throw new BadRequestException('Invalid email or code provided');
+      throw new BadRequestException('Invalid code provided');
     }
 
     const hashedPass = bcrypt.hashSync(password, 10);
 
     const updateUser = this.prisma.user.update({
       where: {
-        email,
+        email: codeExists.email,
       },
       data: {
         password: hashedPass,
@@ -415,7 +415,7 @@ export class UsersService {
 
     const deleteCode = this.prisma.resetCode.delete({
       where: {
-        email_code: { email, code },
+        code,
       },
     });
 
