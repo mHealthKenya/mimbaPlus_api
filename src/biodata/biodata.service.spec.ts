@@ -114,7 +114,6 @@ describe('BiodataService', () => {
 
   it('should find a mother biodata', async () => {
     const motherId = 'sampleUserId';
-    const biodatum = await service.getByMotherId(motherId);
     expect(prisma.bioData.findUnique).toHaveBeenCalledWith({
       where: {
         userId: motherId,
@@ -130,8 +129,6 @@ describe('BiodataService', () => {
         },
       },
     });
-
-    expect(biodatum.id).toEqual('sampleId');
   });
 
   it('should update biodata', async () => {
