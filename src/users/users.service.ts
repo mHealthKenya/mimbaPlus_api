@@ -22,6 +22,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PasswordResetRequestEvent } from './events/password-requested.event';
 import { UserCreatedEvent } from './events/user-created-event';
 import { SendsmsService } from '../sendsms/sendsms.service';
+import { emailRegex, phoneRegex } from 'src/helpers/regex';
 
 export enum Roles {
   ADMIN = 'Admin',
@@ -177,20 +178,31 @@ export class UsersService {
       throw new BadRequestException('Email and Password are required');
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
+
+    let user = null
+
+    if (emailRegex.test(email)) {
+      user = await this.prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
+    } else if (phoneRegex.test(email)) {
+      user = await this.prisma.user.findUnique({
+        where: {
+          phone_number: email,
+        },
+      });
+    }
 
     if (!user) {
-      throw new BadRequestException('Invalid email or password');
+      throw new BadRequestException('Invalid email, phone or password');
     }
 
     const isValid = bcrypt.compareSync(password, user.password);
 
     if (!isValid) {
-      throw new BadRequestException('Invalid email or password');
+      throw new BadRequestException('Invalid email, phone or password');
     }
 
     const { id, role } = user;
