@@ -47,17 +47,17 @@ model User {
   wallet Wallet[] @relation("wallet")
   walletId    String?
 
-  otp Otp[]
 }
 
 model Otp {
   id        String   @id @default(cuid())
-  user User @relation(fields: [userId], references: [id])
   userId String
   otp String
   purpose String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([userId, otp])
 }
 
 model BioData {
@@ -305,7 +305,7 @@ model Wallet {
   id String @id @default(cuid())
   balance Float @default(0.0)
   user User? @relation(fields: [userId], references: [id], "wallet")
-  userId String? @unique
+  userId String? 
   facility Facility? @relation(fields: [facilityId], references: [id], "wallet")
   facilityId String?
 }
@@ -323,6 +323,8 @@ model Transaction {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+
 
 enum TransactionType {
   DEPOSIT

@@ -37,3 +37,49 @@ export class CreateTransactionDto {
   transactionDate: Date;
 
 }
+
+export class TansferRequestDto {
+  @IsNotEmpty()
+  @IsString()
+  userId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  facilityId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  phone: string
+}
+
+export class TansferCompleteDto {
+  @IsNotEmpty()
+  @IsString()
+  userId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  facilityId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  otp: string
+
+  @IsNotEmpty()
+  @IsNumber()
+  amount: number
+}
+
+export class TransactionReversalDto {
+  @IsNotEmpty()
+  @IsString()
+  userId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  facilityId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  transactionId: string
+}

@@ -41,15 +41,13 @@ export class WalletController {
   async getWalletByUserId(@Query() { userId}: GetByWalletDto) {
     const wallet = await this.walletService.getWalletsByUserId(userId)
     return wallet;
-  } 
-
-  @Patch('transfer')
-  async transferTokenFromMotherToFacility(
-    @Body() transferTokenDto: TransferTokenDto
-  ) {
-    const { userId, facilityId, amount, phone } = transferTokenDto;
-    return this.walletService.transferTokenFromMotherToFacility(userId, facilityId, amount, phone);
   }
 
+  @Delete()
+  async deleteWalletById(@Query() { walletId}: GetByWalletDto) {
+    return this.walletService.deleteWalletById(walletId);
+  }
+
+ 
   
 }

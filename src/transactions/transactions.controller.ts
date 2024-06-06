@@ -1,32 +1,40 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { CreateTransactionDto, TansferCompleteDto, TansferRequestDto, TransactionReversalDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 
 @Controller('transactions')
 export class TransactionsController {
   constructor(private readonly transactionsService: TransactionsService) {}
 
-  @Patch('reversal/:userId/:facilityId/:transactionId')
+  @Patch('reversal')
   async reversalTransfer(
-    @Param('userId') userId: string,
-    @Param('facilityId') facilityId: string,
-    @Param('transactionId') transactionId: string,
+    @Body() transactionReversalDto: TransactionReversalDto
   ) {
-    return this.transactionsService.reversalTransfer(userId, facilityId, transactionId);
+    return this.transactionsService.reversalTransfer(transactionReversalDto);
   }
 
-  @Get('facility/:facilityId')
-  async facilityTransactionHistory(@Param('facilityId') facilityId: string) {
+  @Post('trasferRequest')
+  async tokenTransferRequest(@Body() tokenTransferDTO: TansferRequestDto){
+    return this.transactionsService.tokenTransferFromMotherToFacilityRequest(tokenTransferDTO);
+  }
+
+  @Patch('completeTransfer')
+  async completeTransfer(@Body() tansferCompeleteDto: TansferCompleteDto){
+    return this.transactionsService.tokenTransferFromMotherToFacility(tansferCompeleteDto);
+  }
+
+  @Get('facility')
+  async facilityTransactionHistory(@Query('facilityId') facilityId: string) {
     return this.transactionsService.facilityTransctionHistory(facilityId);
   }
 
-  @Get('mother/:userId')
+  @Get('mother')
   async motherTransactionHistory(@Param('userId') userId: string) {
     return this.transactionsService.motherTransctionHistory(userId);
   }
 
-  @Patch('resetFacility/:facilityId')
+  @Patch('resetFacility')
   async resetFacilityWalletBalance(@Param('facilityId') facilityId: string) {
     return this.transactionsService.resetFacilityWalletBalance(facilityId);
   }
