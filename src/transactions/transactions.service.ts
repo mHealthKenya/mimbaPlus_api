@@ -93,6 +93,7 @@ export class TransactionsService {
           amount: -tansferCompeleteDto.amount,
           transactionDate: new Date(),
           type: 'PAYMENT',
+          wallet: {connect: {id: userWallet.id}}
         },
       });
 
@@ -105,6 +106,7 @@ export class TransactionsService {
           status: 'pending',
           type: 'PAYMENT',
           transactionDate: new Date(),
+          wallet: { connect: { id: facilityWallet.id } }
         },
       });
 
@@ -127,11 +129,13 @@ export class TransactionsService {
     if(!transaction) {
       throw new Error('Transaction not found');
     }
-
+   
     //check if transaction belong to facility and user id
     if(transaction.userId !== transactionReversalDto.userId || transaction.facilityId !== transactionReversalDto.facilityId){
       throw new Error('Invalid Transaction');
     }
+    const userWallet = await this.prismaService.wallet.findUnique({ where: { id: transactionReversalDto.userId } });
+    const facilityWallet = await this.prismaService.wallet.findUnique({ where: { id: transactionReversalDto.facilityId } });
 
     const reversedTransaction = await this.prismaService.transaction.create({
       data:{
@@ -143,13 +147,12 @@ export class TransactionsService {
         type: 'REVERSAL',
         status: transaction.status,
         transactionDate: transaction.transactionDate,
-        
+        wallet: { connect: { id: userWallet.id } }, 
       }
     })
 
     // update balance
-    const userWallet = await this.prismaService.wallet.findUnique({ where: { id: transactionReversalDto.userId } });
-    const facilityWallet = await this.prismaService.wallet.findUnique({ where: { id: transactionReversalDto.facilityId } });
+   
 
     const newUserBal = userWallet.balance + transaction.amount;
     const newFacilityBal = facilityWallet.balance - transaction.amount;
@@ -231,6 +234,7 @@ export class TransactionsService {
         transactionDate: new Date(),
         facilityId: facilityWallet.id,
         type: TransactionType.CASHOUT,
+        wallet: { connect: { id: facilityWallet.id } }, 
       },
     });
 
@@ -239,7 +243,7 @@ export class TransactionsService {
     }
   }
 
-  @OnEvent('token.transfer.reques')
+  @OnEvent('token.transfer.request')
   async handleOTPRequest(data: TokenTransferRequestEvent){
     const {phone} = data
 

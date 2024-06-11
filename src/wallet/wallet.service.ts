@@ -41,7 +41,7 @@ export class WalletService {
       const allWallets = await this.prismaService.wallet.findMany()
       return allWallets;
     }catch(error){
-      throw new Error(error);
+      throw new Error(error.message);
     }
   }
 
@@ -83,7 +83,7 @@ export class WalletService {
         throw new Error('Wallet not found');
       }
 
-    return wallet.balance;
+    return {balance: wallet.balance};
     }catch(error){
       throw new Error(error);
     }
@@ -100,5 +100,26 @@ export class WalletService {
     return {item, message: 'Wallet Deleted Successfully'}
   }
   
+
+  async getTotalTokensAwarded(walletId: string): Promise<number> {
+    const wallet = await this.prismaService.wallet.findUnique({
+      where: { id: walletId }
+    });
+
+    if(!wallet){
+      throw new NotFoundException('Wallet not found')
+    }
+
+    const transactions = await this.prismaService.transaction.findMany({
+      where: {
+        walletId: walletId,
+        type: TransactionType.DEPOSIT
+      }
+    })
+
+    const totalTokensAwared = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+
+    return totalTokensAwared
+  }
 
 }

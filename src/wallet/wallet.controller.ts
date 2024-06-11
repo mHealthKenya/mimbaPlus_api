@@ -19,6 +19,11 @@ export class WalletController {
     return this.walletService.createFacilityWallet(createWalletDto);
   }
 
+  @Get('awarded')
+  async getTotalAwardedToken(@Query() {walletId}: GetByWalletDto){
+    return this.walletService.getTotalTokensAwarded(walletId)
+  }
+
   @Get()
   async getAllWallet(){
     return this.walletService.getAllWallet();

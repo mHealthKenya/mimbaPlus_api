@@ -308,6 +308,8 @@ model Wallet {
   userId String? 
   facility Facility? @relation(fields: [facilityId], references: [id], "wallet")
   facilityId String?
+
+  transactions Transaction[]
 }
 
 model Transaction {
@@ -319,9 +321,12 @@ model Transaction {
   invoice String?
   type           TransactionType
   status String
+  walletId String
   transactionDate DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  wallet Wallet @relation(fields: [walletId], references: [id])
 }
 
 
