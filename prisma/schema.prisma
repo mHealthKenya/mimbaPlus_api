@@ -18,6 +18,7 @@ model User {
   email                  String?            @unique
   phone_number           String             @unique
   national_id            String?            @unique
+  active                 Boolean            @default(true)
   password               String
   role                   String             @default("Unassigned")
   createdAt              DateTime           @default(now())

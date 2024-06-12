@@ -10,7 +10,7 @@ Please make sure you run this command at the root of the project
 
 Run docker tag mapi-server devmhk/mplusapi:1.0.0
 
-Replace 1.0.0 with the latest version. For example for production builds increment to 2.0.0 and for development builds use 0.0.1
+Replace 1.0.0 with the latest version. For example for production builds increment to 2.0.0 and for development builds use dev1.0.0
 
 ## Push the image
 
