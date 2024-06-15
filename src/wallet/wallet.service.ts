@@ -139,6 +139,11 @@ export class WalletService {
 
   async findAll() {
     const allWallets = await this.prisma.wallet.findMany({
+
+      orderBy: {
+        updatedAt: 'desc',
+      },
+
       include: {
         user: {
           select: {
@@ -157,6 +162,62 @@ export class WalletService {
       throw new BadRequestException(err)
     })
     return allWallets
+  }
+
+
+  async findAllFacilityWallets() {
+    const allWallets = await this.prisma.facilityWallet.findMany({
+      include: {
+        facility: {
+          select: {
+            name: true
+          }
+        }
+      }
+    }).then(data => data).catch(err => {
+      throw new BadRequestException(err)
+    })
+    return allWallets
+  }
+
+
+  async findTotalFacilityBalance() {
+
+    const totalBalance = await this.prisma.facilityWallet.aggregate({
+      _sum: {
+        balance: true
+      }
+    })
+    return {
+      totalBalance: totalBalance._sum.balance
+    }
+  }
+
+  async findTotalWalletBalance() {
+    const totalBalance = await this.prisma.wallet.aggregate({
+      _sum: {
+        balance: true
+      }
+    })
+    return {
+      totalBalance: totalBalance._sum.balance
+    }
+  }
+
+  async findTotalTransactionsPaid() {
+    const totalTransactions = await this.prisma.walletTransaction.aggregate({
+      where: {
+        approvedBy: {
+          isNot: null
+        }
+      },
+      _sum: {
+        points: true
+      }
+    })
+    return {
+      totalTransactions: totalTransactions._sum.points
+    }
   }
 
 
@@ -360,6 +421,64 @@ export class WalletService {
     return facilityTransactions
   }
 
+
+  async allTransactions() {
+
+    const transactions = await this.prisma.walletTransaction.findMany({
+      select: {
+        id: true,
+        createdAt: true,
+        points: true,
+        user: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true
+          }
+        },
+        approvedBy: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true
+          }
+        },
+
+        facility: {
+          select: {
+            name: true
+          }
+        },
+
+        createdBy: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true
+          }
+        },
+
+      },
+
+      orderBy: [
+        {
+          approvedById: {
+            sort: 'desc', nulls: 'first'
+          }
+        },
+        {
+          createdAt: 'desc',
+        }
+      ],
+    }).then(data => data).catch(err => {
+
+      throw new BadRequestException(err)
+    })
+
+    return transactions
+
+
+  }
 
   async approveTransaction({ id }: ApproveTransactionDto) {
     const approvedById = await this.userHelper.getUser().id;

@@ -22,6 +22,8 @@ export class WalletController {
     return this.walletService.walletBase(data);
   }
 
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
   @Get('all')
   findAll() {
     return this.walletService.findAll();
@@ -83,6 +85,46 @@ export class WalletController {
   @Get('facility/transactions')
   facilityPoints() {
     return this.walletService.facilityTransactions();
+  }
+
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('facility/all')
+  findAllFacilityWallets() {
+    return this.walletService.findAllFacilityWallets();
+  }
+
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('facility/balance')
+  findTotalFacilityBalance() {
+    return this.walletService.findTotalFacilityBalance();
+  }
+
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('mothers/balance')
+  findTotalWalletBalance() {
+    return this.walletService.findTotalWalletBalance();
+  }
+
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('transactions/paid')
+  findAllMothersWallets() {
+    return this.walletService.findTotalTransactionsPaid();
+  }
+
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('transactions/all')
+  findAllUnpaidTransactions() {
+    return this.walletService.allTransactions();
   }
 
 }
