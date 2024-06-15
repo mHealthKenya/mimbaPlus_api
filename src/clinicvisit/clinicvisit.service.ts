@@ -11,7 +11,7 @@ export class ClinicvisitService {
     private readonly prismaService: PrismaService,
     private readonly datePicker: DatePicker,
     private readonly userHelper: UserHelper,
-  ) {}
+  ) { }
   async create(createClinicvisitDto: CreateClinicvisitDto) {
     const newVisit = await this.prismaService.clinicVisit
       .create({
@@ -355,5 +355,65 @@ export class ClinicvisitService {
       });
 
     return totalCost;
+  }
+
+
+  async findByFacilityUnbilled() {
+    const userId = await this.userHelper.getUser().id;
+
+    const { facilityId } = await this.prismaService.user.findUnique({
+      where: {
+        id: userId,
+      }
+    })
+
+    const visits = await this.prismaService.clinicVisit.findMany({
+      where: {
+        facilityId,
+      },
+
+
+
+      orderBy: [
+        {
+          billed: 'asc',
+        },
+        {
+          createdAt: 'desc',
+        }
+      ],
+
+      select: {
+        id: true,
+        facilityId: true,
+        createdAt: true,
+        billed: true,
+        bioData: {
+          select: {
+
+            user: {
+
+              select: {
+                id: true,
+                f_name: true,
+                l_name: true,
+                phone_number: true,
+                Wallet: {
+                  select: {
+                    id: true,
+                    balance: true,
+                  },
+                },
+              }
+
+            }
+          }
+        }
+      }
+    }).then(data => data).catch(err => {
+      throw new BadRequestException(err);
+    })
+
+    return visits;
   }
 }

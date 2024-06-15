@@ -19,7 +19,7 @@ import { GetVisitsByFacilityDto } from './dto/visits-by-facility-id.dto';
 
 @Controller('clinicvisit')
 export class ClinicvisitController {
-  constructor(private readonly clinicvisitService: ClinicvisitService) {}
+  constructor(private readonly clinicvisitService: ClinicvisitService) { }
 
   @UseGuards(RolesGuard)
   @UserRoles(Roles.FACILITY)
@@ -89,5 +89,12 @@ export class ClinicvisitController {
   @UserRoles(Roles.MOTHER)
   motherVisits() {
     return this.clinicvisitService.findVisitsByMother();
+  }
+
+  @Get('unbilled')
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.FACILITY)
+  unbilledVisits() {
+    return this.clinicvisitService.findByFacilityUnbilled();
   }
 }

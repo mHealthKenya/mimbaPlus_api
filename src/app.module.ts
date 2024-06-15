@@ -16,11 +16,14 @@ import { TargetsModule } from './targets/targets.module';
 import { UsersModule } from './users/users.module';
 import { EnquiriesModule } from './enquiries/enquiries.module';
 import { StatsModule } from './stats/stats.module';
+import { WalletModule } from './wallet/wallet.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     EventEmitterModule.forRoot(),
+    ScheduleModule.forRoot(),
     UsersModule,
     FacilitiesModule,
     BiodataModule,
@@ -33,8 +36,9 @@ import { StatsModule } from './stats/stats.module';
     SendsmsModule,
     EnquiriesModule,
     StatsModule,
+    WalletModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
-export class AppModule {}
+export class AppModule { }

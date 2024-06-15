@@ -9,7 +9,7 @@ export class BiodataService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userHelper: UserHelper,
-  ) {}
+  ) { }
   async create(createBiodatumDto: CreateBiodatumDto) {
     const newBiodata = await this.prisma.bioData
       .upsert({
@@ -158,6 +158,11 @@ export class BiodataService {
             f_name: true,
             l_name: true,
             phone_number: true,
+            Wallet: {
+              select: {
+                balance: true,
+              },
+            }
           },
         },
       },

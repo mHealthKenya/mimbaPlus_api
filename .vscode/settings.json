@@ -22,6 +22,7 @@
     "motherschv",
     "mplusapi",
     "passwordrequest",
+    "requestcode",
     "roleandfacility",
     "rolescount",
     "samplechvid",
@@ -33,6 +34,10 @@
     "totalchvs",
     "totalmothers",
     "totalvisits",
-    "vdrl"
+    "Unbilled",
+    "updatebalance",
+    "vdrl",
+    "walletbase",
+    "Walletcodeverification"
   ]
 }
