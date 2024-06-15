@@ -4,4 +4,8 @@ export class RequestCodeDto {
     @IsNotEmpty()
     @IsString()
     userId: string
+
+    @IsNotEmpty()
+    @IsString()
+    clinicVisitId: string
 }

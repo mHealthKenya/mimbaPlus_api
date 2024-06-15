@@ -236,6 +236,7 @@ model ClinicVisit {
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
   WalletTransaction    WalletTransaction[]
+  WalletCodes          WalletCodes[]
 }
 
 model BirthPlan {
@@ -343,12 +344,14 @@ model WalletBase {
 }
 
 model WalletCodes {
-  id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String
-  code      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String      @id @default(cuid())
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  visit         ClinicVisit @relation(fields: [clinicVisitId], references: [id])
+  clinicVisitId String      
+  code          String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@unique([userId, code], name: "walletCode")
 }

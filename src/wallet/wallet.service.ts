@@ -264,6 +264,7 @@ export class WalletService {
       data: {
         code,
         userId: user.id,
+        clinicVisitId: data.clinicVisitId
       }
     }).then(() => {
       this.eventEmitter.emit('code-requested', new CodeRequestedEvent(phone_number, code))
@@ -412,6 +413,9 @@ export class WalletService {
             phone_number: true
           }
         }
+      },
+      orderBy: {
+        updatedAt: 'desc',
       }
     }).then(data => data).catch(err => {
 

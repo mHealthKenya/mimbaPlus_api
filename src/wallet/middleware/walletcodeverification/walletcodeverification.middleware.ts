@@ -6,7 +6,7 @@ export class WalletcodeverificationMiddleware implements NestMiddleware {
   constructor(private readonly prisma: PrismaService) { }
   async use(req: any, res: any, next: () => void) {
 
-    const { userId, code } = req.body;
+    const { userId, code, clinicVisitId } = req.body;
 
     const walletC = await this.prisma.walletCodes.findUnique({
       where: {
@@ -25,6 +25,11 @@ export class WalletcodeverificationMiddleware implements NestMiddleware {
 
 
     if (walletC) {
+
+      if (walletC.clinicVisitId !== clinicVisitId) {
+
+        throw new BadRequestException('Invalid code');
+      }
 
       await this.prisma.walletCodes.deleteMany({
         where: {
