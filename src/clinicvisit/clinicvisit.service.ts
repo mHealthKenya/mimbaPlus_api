@@ -388,6 +388,11 @@ export class ClinicvisitService {
         facilityId: true,
         createdAt: true,
         billed: true,
+        WalletTransaction: {
+          select: {
+            points: true,
+          }
+        },
         bioData: {
           select: {
 

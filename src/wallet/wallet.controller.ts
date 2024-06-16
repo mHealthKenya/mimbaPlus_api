@@ -9,6 +9,7 @@ import { WalletService } from './wallet.service';
 import { RequestCodeDto } from './dto/request-code.dto';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { ApproveTransactionDto } from './dto/approve-transaction.dto';
+import { MultiApproveDto } from './dto/multi-approve.dto';
 
 @Controller('wallet')
 export class WalletController {
@@ -125,6 +126,22 @@ export class WalletController {
   @Get('transactions/all')
   findAllUnpaidTransactions() {
     return this.walletService.allTransactions();
+  }
+
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Patch('transactions/multiapprove')
+  findAllPendingTransactions(@Body() data: MultiApproveDto) {
+    return this.walletService.multiApprove(data);
+  }
+
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Post('transactions/checkbalance')
+  checkPeriodBalance(@Body() data: MultiApproveDto) {
+    return this.walletService.checkPeriodBalance(data);
   }
 
 }

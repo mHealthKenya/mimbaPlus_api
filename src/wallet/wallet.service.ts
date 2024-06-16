@@ -14,6 +14,7 @@ import { RequestCodeDto } from './dto/request-code.dto';
 import { UpdateWalletDto } from './dto/update-wallet.dto';
 import { CodeRequestedEvent } from './events/code-requested.event';
 import { TransactionCompletedEvent } from './events/tranasction-completed.dto';
+import { MultiApproveDto } from './dto/multi-approve.dto';
 
 @Injectable()
 export class WalletService {
@@ -542,6 +543,98 @@ export class WalletService {
     return approve
   }
 
+
+  async multiApprove(data: MultiApproveDto) {
+
+    const approvedById = await this.userHelper.getUser().id;
+
+    const startDate = new Date(data.startDate)
+    const endDate = new Date(data.endDate)
+
+
+    const transactions = await this.prisma.walletTransaction.findMany({
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate
+        },
+        approvedById: null,
+        facilityId: data.facilityId
+      }
+    })
+
+
+
+    const multi = await Promise.allSettled(transactions.map(async item => {
+      const updateWallet = this.prisma.walletTransaction.update({
+        where: {
+          id: item.id
+
+        },
+        data: {
+          approvedById
+        }
+      })
+
+
+      const updateFacilityWallet = this.prisma.facilityWallet.update({
+        where: {
+          facilityId: item.facilityId
+        },
+        data: {
+          balance: {
+            decrement: Number(Number(item.points).toFixed(2))
+          }
+        }
+      })
+
+
+      const approve = await this.prisma.$transaction([updateWallet, updateFacilityWallet]).then(() => ({
+        message: 'Transactions approved'
+      })).catch(err => {
+
+        throw new BadRequestException(err)
+      })
+
+      return approve
+
+
+    }))
+
+
+    return multi
+  }
+
+
+  async checkPeriodBalance(data: MultiApproveDto) {
+
+
+    const startDate = new Date(data.startDate)
+    const endDate = new Date(data.endDate)
+
+    const totalBalance = await this.prisma.walletTransaction.aggregate({
+      _sum: {
+        points: true
+      },
+      where: {
+        createdAt: {
+          gte: startDate,
+          lte: endDate
+        },
+
+        facilityId: data.facilityId,
+
+        approvedById: null
+      }
+    })
+
+    return {
+      totalBalance: totalBalance._sum.points
+    }
+
+
+  }
+
   @Cron(CronExpression.EVERY_5_MINUTES)
   async createWallets() {
     const walletBase = await this.prisma.walletBase.findUnique({
@@ -589,6 +682,9 @@ export class WalletService {
       }))
     }
   }
+
+
+
 
 
   @Cron(CronExpression.EVERY_5_MINUTES)
