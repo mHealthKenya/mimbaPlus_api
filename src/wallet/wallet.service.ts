@@ -635,6 +635,19 @@ export class WalletService {
 
   }
 
+  async getBaseWallet() {
+    const walletBase = await this.prisma.walletBase.findUnique({
+      where: {
+        id: process.env.WALLET_BASE_ID
+      }
+    }).then(data => data).catch(err => {
+
+      throw new BadRequestException(err)
+    })
+
+    return walletBase
+  }
+
   @Cron(CronExpression.EVERY_5_MINUTES)
   async createWallets() {
     const walletBase = await this.prisma.walletBase.findUnique({

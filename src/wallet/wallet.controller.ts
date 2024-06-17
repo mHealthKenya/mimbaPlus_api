@@ -144,4 +144,12 @@ export class WalletController {
     return this.walletService.checkPeriodBalance(data);
   }
 
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('base')
+  getBaseWallet() {
+    return this.walletService.getBaseWallet();
+  }
+
 }
