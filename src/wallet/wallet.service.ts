@@ -15,6 +15,7 @@ import { UpdateWalletDto } from './dto/update-wallet.dto';
 import { CodeRequestedEvent } from './events/code-requested.event';
 import { TransactionCompletedEvent } from './events/tranasction-completed.dto';
 import { MultiApproveDto } from './dto/multi-approve.dto';
+import { PeriodTransactionsDto } from './dto/period-transactions.dto';
 
 @Injectable()
 export class WalletService {
@@ -485,6 +486,101 @@ export class WalletService {
 
   }
 
+
+  async periodTransactionsTotals(data: PeriodTransactionsDto) {
+
+    const transactions = await this.prisma.walletTransaction.aggregate({
+      _sum: {
+        points: true
+      },
+      where: {
+        createdAt: {
+          gte: new Date(data.startDate),
+          lte: new Date(data.endDate)
+        },
+        approvedBy: {
+          isNot: null
+        }
+      }
+    }).then(data => data).catch(err => {
+      throw new BadRequestException(err)
+    })
+
+    return {
+      totalPoints: transactions._sum.points
+    }
+  }
+
+
+  async periodTransactions(data: PeriodTransactionsDto) {
+
+    const transactions = await this.prisma.walletTransaction.findMany({
+      where: {
+
+        createdAt: {
+          gte: new Date(data.startDate),
+          lte: new Date(data.endDate)
+        },
+
+        approvedBy: {
+          isNot: null
+        }
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        points: true,
+        user: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true
+          }
+        },
+        approvedBy: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true
+          }
+        },
+
+        facility: {
+          select: {
+            name: true
+          }
+        },
+
+        createdBy: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true
+          }
+        },
+
+      },
+
+      orderBy: [
+        {
+          approvedById: {
+            sort: 'desc', nulls: 'first'
+          }
+        },
+        {
+          createdAt: 'desc',
+        }
+      ],
+    }).then(data => data).catch(err => {
+
+      throw new BadRequestException(err)
+    })
+
+    return transactions
+
+
+  }
+
   async approveTransaction({ id }: ApproveTransactionDto) {
     const approvedById = await this.userHelper.getUser().id;
     const transaction = await this.prisma.walletTransaction.findUnique({
@@ -647,6 +743,9 @@ export class WalletService {
 
     return walletBase
   }
+
+
+
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async createWallets() {

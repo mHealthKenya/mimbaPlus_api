@@ -10,6 +10,7 @@ import { RequestCodeDto } from './dto/request-code.dto';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { ApproveTransactionDto } from './dto/approve-transaction.dto';
 import { MultiApproveDto } from './dto/multi-approve.dto';
+import { PeriodTransactionsDto } from './dto/period-transactions.dto';
 
 @Controller('wallet')
 export class WalletController {
@@ -150,6 +151,22 @@ export class WalletController {
   @Get('base')
   getBaseWallet() {
     return this.walletService.getBaseWallet();
+  }
+
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('transactions/totals/period')
+  getPeriodTransactionsTotals(@Query() data: PeriodTransactionsDto) {
+    return this.walletService.periodTransactionsTotals(data);
+  }
+
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('transactions/period')
+  getPeriodTransactions(@Query() data: PeriodTransactionsDto) {
+    return this.walletService.periodTransactions(data);
   }
 
 }
