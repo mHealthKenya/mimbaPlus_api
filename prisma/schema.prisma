@@ -18,6 +18,7 @@ model User {
   email                  String?            @unique
   phone_number           String             @unique
   national_id            String?            @unique
+  active                 Boolean            @default(true)
   password               String
   role                   String             @default("Unassigned")
   createdAt              DateTime           @default(now())
@@ -160,12 +161,11 @@ model LocationCoordinates {
 
 model ResetCode {
   id        String   @id @default(cuid())
-  email     String
-  code      String
+  email     String?
+  code      String   @unique
+  phone     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@unique([email, code])
 }
 
 model Schedule {

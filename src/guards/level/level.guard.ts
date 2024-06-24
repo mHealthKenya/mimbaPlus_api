@@ -7,7 +7,7 @@ export class LevelGuard implements CanActivate {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userHelper: UserHelper,
-  ) {}
+  ) { }
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const roles = {
       SuperAdmin: 5,
@@ -35,6 +35,8 @@ export class LevelGuard implements CanActivate {
     }
 
     const userRole = this.userHelper.getUser().role;
+
+
     return roles[userRole] > roles[user.role];
   }
 }

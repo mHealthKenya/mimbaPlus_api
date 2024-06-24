@@ -1,0 +1,17 @@
+networks:
+  app-tier:
+    driver: bridge
+
+services:
+  mplusapi:
+    image: 'devmhk/mplusapi:1.0.0'
+    container_name: 'mplusapi'
+
+    restart: always
+
+    env_file: .env
+
+    ports:
+      - '8000:8000'
+    networks:
+      - app-tier

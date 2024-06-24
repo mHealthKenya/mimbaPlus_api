@@ -21,6 +21,8 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PasswordResetRequestEvent } from './events/password-requested.event';
 import { UserCreatedEvent } from './events/user-created-event';
+import { SendsmsService } from '../sendsms/sendsms.service';
+import { emailRegex, phoneRegex } from 'src/helpers/regex';
 
 export enum Roles {
   ADMIN = 'Admin',
@@ -47,7 +49,8 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
     private readonly userHelper: UserHelper,
-  ) {}
+    private readonly smsService: SendsmsService
+  ) { }
 
   async createUser(createUser: CreateUserDto) {
     const id = uuidv4();
@@ -175,20 +178,31 @@ export class UsersService {
       throw new BadRequestException('Email and Password are required');
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
+
+    let user = null
+
+    if (emailRegex.test(email)) {
+      user = await this.prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
+    } else if (phoneRegex.test(email)) {
+      user = await this.prisma.user.findUnique({
+        where: {
+          phone_number: email,
+        },
+      });
+    }
 
     if (!user) {
-      throw new BadRequestException('Invalid email or password');
+      throw new BadRequestException('Invalid email, phone or password');
     }
 
     const isValid = bcrypt.compareSync(password, user.password);
 
     if (!isValid) {
-      throw new BadRequestException('Invalid email or password');
+      throw new BadRequestException('Invalid email, phone or password');
     }
 
     const { id, role } = user;
@@ -327,15 +341,34 @@ export class UsersService {
   }
 
   async passwordResetRequest(email: string) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        email,
-      },
-    });
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const phoneRegex = /^254[0-9]{9}$/
+
+
+    let user = null
+
+    const isEmail = emailRegex.test(email)
+    const isPhone = phoneRegex.test(email)
+
+
+    if (isEmail) {
+      user = await this.prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
+    } else if (isPhone) {
+      user = await this.prisma.user.findUnique({
+        where: {
+          phone_number: email,
+        },
+      });
+    }
 
     if (!user) {
       throw new BadRequestException(
-        'The email you provided does not exist in our database',
+        'The email or phone you provided does not exist in our database',
       );
     }
 
@@ -344,14 +377,18 @@ export class UsersService {
     const newRCode = await this.prisma.resetCode
       .create({
         data: {
-          email,
+          email: user.email,
           code,
         },
       })
       .then((data) => {
         this.eventEmitter.emit(
           'password.request',
-          new PasswordResetRequestEvent(data.email, data.code),
+          new PasswordResetRequestEvent({
+            type: isEmail ? 'email' : 'phone',
+            email: user.email,
+            phone: user.phone_number
+          }, data.code),
         );
         return {
           message: 'Password reset code successfully sent',
@@ -365,23 +402,23 @@ export class UsersService {
   }
 
   async resetPassword(data: UpdatePasswordDto) {
-    const { code, email, password } = data;
+    const { code, password } = data;
 
     const codeExists = await this.prisma.resetCode.findUnique({
       where: {
-        email_code: { email, code },
+        code,
       },
     });
 
     if (!codeExists) {
-      throw new BadRequestException('Invalid email or code provided');
+      throw new BadRequestException('Invalid code provided');
     }
 
     const hashedPass = bcrypt.hashSync(password, 10);
 
     const updateUser = this.prisma.user.update({
       where: {
-        email,
+        email: codeExists.email,
       },
       data: {
         password: hashedPass,
@@ -390,7 +427,7 @@ export class UsersService {
 
     const deleteCode = this.prisma.resetCode.delete({
       where: {
-        email_code: { email, code },
+        code,
       },
     });
 
@@ -555,16 +592,25 @@ export class UsersService {
 
   @OnEvent('password.request')
   async handlePasswordRequest(data: PasswordResetRequestEvent) {
-    const { email } = data;
+    const { options: { type, email, phone } } = data;
 
-    const msg = emailBodyPass(data);
+    if (type === "email") {
+      const msg = emailBodyPass(data);
 
-    await new SendEmail(
-      email,
-      'Password Reset',
-      'We have received a request to reset your password',
-      msg,
-    ).send();
+      await new SendEmail(
+        email,
+        'Password Reset',
+        'We have received a request to reset your password',
+        msg,
+      ).send();
+    } else if (type === "phone") {
+
+      await this.smsService.sendSMSFn({
+        phoneNumber: "+" + phone,
+        message: `Your password reset code is ${data.code}`
+      })
+    }
+
   }
 
   @OnEvent('user.created')

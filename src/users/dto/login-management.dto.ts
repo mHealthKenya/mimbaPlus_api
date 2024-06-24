@@ -1,9 +1,10 @@
-import { IsEmail, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
+import { IsNotEmpty, IsString, Matches, ValidateIf } from 'class-validator';
+import { combinedRegex } from '../../helpers/regex';
 
 export class LoginManagementDto {
   @IsNotEmpty()
   @ValidateIf((object) => object.email !== undefined)
-  @IsEmail()
+  @Matches(combinedRegex, { message: "Invalid email or phone number" })
   email: string;
 
   @IsNotEmpty()

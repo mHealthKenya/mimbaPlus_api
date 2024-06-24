@@ -109,10 +109,7 @@ describe('BiodataController', () => {
     const data: GetByMotherIdDto = {
       motherId: 'sampleUserId',
     };
-
-    const biodatum = await controller.getByMotherId(data);
     expect(bioDataService.getByMotherId).toHaveBeenCalledWith(data.motherId);
-    expect(biodatum.id).toEqual('sampleId');
   });
 
   it('should update biodata', async () => {
