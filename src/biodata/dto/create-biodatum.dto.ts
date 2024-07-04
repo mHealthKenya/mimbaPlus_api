@@ -53,7 +53,6 @@ export class CreateBiodatumDto {
   gravidity?: number;
 
   @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  parity?: number;
+  @IsString()
+  parity?: string;
 }
