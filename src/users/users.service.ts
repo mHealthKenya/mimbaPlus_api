@@ -7,22 +7,23 @@ import {
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
+import { emailRegex, phoneRegex } from 'src/helpers/regex';
 import { v4 as uuidv4 } from 'uuid';
 import { emailBodyPass } from '../helpers/password-requested-email';
 import { SendEmail } from '../helpers/send-email';
 import { emailBody } from '../helpers/user-created-email';
 import { User, UserHelper } from '../helpers/user-helper';
 import { PrismaService } from '../prisma/prisma.service';
+import { SendsmsService } from '../sendsms/sendsms.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dto';
 import { GetUserByRole } from './dto/get-user-by-role.dto';
+import { GetUserDto } from './dto/get-users.dto';
 import { LoginManagementDto } from './dto/login-management.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PasswordResetRequestEvent } from './events/password-requested.event';
 import { UserCreatedEvent } from './events/user-created-event';
-import { SendsmsService } from '../sendsms/sendsms.service';
-import { emailRegex, phoneRegex } from 'src/helpers/regex';
 
 export enum Roles {
   ADMIN = 'Admin',
@@ -588,6 +589,39 @@ export class UsersService {
       });
 
     return user;
+  }
+
+
+  async mothersRegistered({ userId }: GetUserDto) {
+
+    const ms = this.prisma.user.findMany({
+      where: {
+        createdById: userId,
+        role: Roles.MOTHER
+      },
+
+      include: {
+        Facility: {
+          select: {
+            name: true
+          }
+        }
+      }
+    })
+
+    const cs = this.prisma.user.count({
+      where: {
+        createdById: userId,
+        role: Roles.MOTHER
+      }
+    })
+
+    const [mothers, count] = await this.prisma.$transaction([ms, cs])
+
+    return {
+      mothers,
+      count
+    }
   }
 
   @OnEvent('password.request')
