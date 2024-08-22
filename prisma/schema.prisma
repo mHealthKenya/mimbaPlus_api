@@ -60,7 +60,7 @@ model BioData {
   height                 Float
   weight                 Float
   active                 Boolean       @default(true)
-  parity                 Int?
+  parity                 String
   age                    Float
   last_monthly_period    DateTime
   expected_delivery_date DateTime

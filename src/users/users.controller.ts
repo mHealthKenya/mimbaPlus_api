@@ -19,10 +19,11 @@ import { GetUserByRoleAndFacility } from './dto/get-user-by-role-and-facility.dt
 import { GetUserById } from './dto/get-user-by-id.dto';
 import { PasswordResetRequestDto } from './dto/password-reset-request.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { GetUserDto } from './dto/get-users.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @UseGuards(RolesGuard)
   @UserRoles(Roles.CHV, Roles.ADMIN)
@@ -125,5 +126,10 @@ export class UsersController {
   @Get('individual')
   getIndividual() {
     return this.usersService.getUser();
+  }
+
+  @Get('mothers-registered')
+  getMothersRegistered(@Query() data: GetUserDto) {
+    return this.usersService.mothersRegistered(data)
   }
 }
