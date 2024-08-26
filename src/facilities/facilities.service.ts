@@ -1,17 +1,22 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import axios from 'axios';
+import { UserHelper } from 'src/helpers/user-helper';
+import { Roles } from 'src/users/users.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFacilityDto } from './dto/create-facility.dto';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { FacilityCreatedEvent } from './events/facility-created.event';
-import axios from 'axios';
+import { CreateEmergencyContactDto } from './dto/emergency-contact.dto';
+import { GetEmergencyContactDto } from './dto/get-emergency-contact.dto';
 import { UpdateFacilityDto } from './dto/update-facility.dto';
+import { FacilityCreatedEvent } from './events/facility-created.event';
 
 @Injectable()
 export class FacilitiesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
-  ) {}
+    private readonly userHelper: UserHelper,
+  ) { }
   async create(createFacilityDto: CreateFacilityDto) {
     const newFacility = await this.prisma.facility
       .create({
@@ -165,6 +170,98 @@ export class FacilitiesService {
     return {
       count,
     };
+  }
+
+  async createEmergencyContact(data: CreateEmergencyContactDto) {
+    const newContact = await this.prisma.emergencyContact.upsert({
+      where: {
+        facilityId: data.facilityId,
+      },
+
+      create: {
+        ...data,
+      },
+
+      update: {
+        ...data,
+      },
+    }).then(data => data).catch(err => {
+      throw new BadRequestException(err);
+    })
+
+    return newContact
+  }
+
+  async addEmergencyContact(data: CreateEmergencyContactDto) {
+    const { phone } = data;
+    const userId = await this.userHelper.getUser().id;
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (user.role === Roles.FACILITY) {
+      await this.createEmergencyContact({
+        phone,
+        facilityId: user.facilityId,
+      });
+    } else {
+      await this.createEmergencyContact(data)
+    }
+  }
+
+
+  async getEmergencyContact({ facilityId }: GetEmergencyContactDto) {
+    const contact = await this.prisma.emergencyContact
+      .findUnique({
+        where: {
+          facilityId,
+        },
+        include: {
+          facility: {
+            select: {
+              name: true,
+            }
+          }
+        }
+      })
+      .then(data => {
+        if (!data) {
+          return null
+        }
+
+        return data
+      })
+      .catch(err => {
+        throw new BadRequestException(err);
+      })
+
+    return contact
+  }
+
+  async allEmergencyContacts() {
+    const contacts = await this.prisma.emergencyContact
+      .findMany({
+        include: {
+          facility: {
+            select: {
+              name: true,
+            }
+          }
+        }
+      })
+      .then(data => data)
+      .catch(err => {
+        throw new BadRequestException(err);
+      })
+
+    return contacts
   }
 
   @OnEvent('facility.created')

@@ -11,6 +11,7 @@ import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { ApproveTransactionDto } from './dto/approve-transaction.dto';
 import { MultiApproveDto } from './dto/multi-approve.dto';
 import { PeriodTransactionsDto } from './dto/period-transactions.dto';
+import { ReverseWalletDto } from './dto/reverse.dto';
 
 @Controller('wallet')
 export class WalletController {
@@ -167,6 +168,22 @@ export class WalletController {
   @Get('transactions/period')
   getPeriodTransactions(@Query() data: PeriodTransactionsDto) {
     return this.walletService.periodTransactions(data);
+  }
+
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Post('reverse')
+  reverseTransaction(@Body() data: ReverseWalletDto) {
+    return this.walletService.reverseTransaction(data);
+  }
+
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.MOTHER)
+  @Get('transactions/individual/mother')
+  motherTransactions() {
+    return this.walletService.motherTransactions();
   }
 
 }

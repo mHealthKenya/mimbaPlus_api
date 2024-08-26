@@ -16,6 +16,8 @@ import { CodeRequestedEvent } from './events/code-requested.event';
 import { TransactionCompletedEvent } from './events/tranasction-completed.dto';
 import { MultiApproveDto } from './dto/multi-approve.dto';
 import { PeriodTransactionsDto } from './dto/period-transactions.dto';
+import { ReverseWalletDto } from './dto/reverse.dto';
+import { Roles } from 'src/users/users.service';
 
 @Injectable()
 export class WalletService {
@@ -392,6 +394,7 @@ export class WalletService {
         id: true,
         createdAt: true,
         points: true,
+        rejected: true,
         user: {
           select: {
             f_name: true,
@@ -435,6 +438,7 @@ export class WalletService {
         id: true,
         createdAt: true,
         points: true,
+        rejected: true,
         user: {
           select: {
             f_name: true,
@@ -746,6 +750,150 @@ export class WalletService {
 
 
 
+  async reverseTransaction({ id, reason }: ReverseWalletDto) {
+
+    const approvedById = await this.userHelper.getUser().id;
+
+
+    const transaction = await this.prisma.walletTransaction.findUnique({
+      where: {
+        id
+      }
+    })
+
+    if (!transaction) {
+      throw new NotFoundException('Wallet not found')
+    }
+
+    if (transaction.approvedById) {
+      throw new BadRequestException('Transaction already approved')
+    }
+
+    const updateWallet = this.prisma.wallet.update({
+      where: {
+        userId: transaction.userId
+      },
+
+      data: {
+        balance: {
+          increment: Number(transaction.points)
+        }
+      }
+    })
+
+    const updateFacilityWallet = this.prisma.facilityWallet.update({
+      where: {
+        facilityId: transaction.facilityId
+      },
+      data: {
+        balance: {
+          decrement: Number(transaction.points)
+        }
+      }
+    })
+
+
+    const updateTransaction = this.prisma.walletTransaction.update({
+      where: {
+        id
+      },
+
+
+
+      data: {
+        approvedById,
+        rejected: true,
+        points: 0,
+        balance: transaction.previousPoints,
+        previousPoints: transaction.previousPoints + transaction.points
+      }
+    })
+
+
+    const transactionReversal = this.prisma.transactionReversal.create({
+      data: {
+        userId: approvedById,
+        reason,
+        walletTransactionId: transaction.id
+      }
+    })
+
+
+    const complete = await this.prisma.$transaction([updateWallet, updateFacilityWallet, updateTransaction, transactionReversal]).then(() => ({
+      message: 'Transaction reversed'
+    })).catch(err => {
+
+      throw new BadRequestException(err)
+    })
+
+
+    return complete
+
+
+  }
+
+
+  async motherTransactions() {
+    const userId = await this.userHelper.getUser().id
+
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId
+      }
+    })
+
+    if (!user || user.role !== Roles.MOTHER || !user.hasWallet || !user.active) {
+      throw new BadRequestException('Cannot complete request')
+    }
+
+
+
+    const transactions = await this.prisma.walletTransaction.findMany({
+      where: {
+        userId
+      },
+
+      orderBy: {
+        createdAt: 'desc'
+      },
+
+      include: {
+        facility: {
+          select: {
+            name: true,
+            EmergencyContact: {
+              select: {
+                phone: true
+              }
+            }
+          }
+        },
+
+        clinicVisit: {
+          select: {
+            createdAt: true
+          }
+        },
+
+        createdBy: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true
+          }
+        }
+
+
+      }
+    }).then(data => data).catch(err => {
+
+      throw new BadRequestException(err)
+    })
+
+    return transactions
+
+  }
+
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async createWallets() {
@@ -794,6 +942,9 @@ export class WalletService {
       }))
     }
   }
+
+
+
 
 
 

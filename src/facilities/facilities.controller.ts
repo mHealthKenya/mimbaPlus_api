@@ -16,10 +16,12 @@ import { RolesGuard } from '../guards/roles/roles.guard';
 import { UserRoles } from '../decorators/roles/roles.decorator';
 import { Roles } from '../users/users.service';
 import { GetFacilityByIdDto } from './dto/get-facility.dto';
+import { CreateEmergencyContactDto } from './dto/emergency-contact.dto';
+import { GetEmergencyContactDto } from './dto/get-emergency-contact.dto';
 
 @Controller('facilities')
 export class FacilitiesController {
-  constructor(private readonly facilitiesService: FacilitiesService) {}
+  constructor(private readonly facilitiesService: FacilitiesService) { }
 
   @UseGuards(RolesGuard)
   @UserRoles(Roles.ADMIN)
@@ -61,4 +63,23 @@ export class FacilitiesController {
   facilityCount() {
     return this.facilitiesService.countFacilities();
   }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.FACILITY)
+  @Post('emergencycontact')
+  createEmergencyContact(@Body() data: CreateEmergencyContactDto) {
+    return this.facilitiesService.createEmergencyContact(data);
+  }
+
+
+  @Get('emergencycontact')
+  getEmergencyContact(@Query() data: GetEmergencyContactDto) {
+    return this.facilitiesService.getEmergencyContact(data);
+  }
+
+  @Get('emergencycontacts')
+  getEmergencyContacts() {
+    return this.facilitiesService.allEmergencyContacts();
+  }
+
 }

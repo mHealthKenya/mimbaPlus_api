@@ -27,6 +27,14 @@ export class FacilitiesModule implements NestModule {
           path: '/facilities/coordinates',
           method: RequestMethod.GET,
         },
+        {
+          path: 'facilities/emergencycontacts',
+          method: RequestMethod.GET,
+        },
+        {
+          path: '/facilities/emergencycontact',
+          method: RequestMethod.GET,
+        }
       )
       .forRoutes(FacilitiesController);
   }
