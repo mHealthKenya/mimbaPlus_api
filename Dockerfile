@@ -47,6 +47,9 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 
 # Copy the rest of the source files into the image.
 COPY . .
+
+
+RUN yarn prisma generate
 # Run the build script.
 RUN yarn build
 
@@ -73,7 +76,6 @@ COPY --from=build /usr/src/app/dist ./dist
 # Expose the port that the application listens on.
 EXPOSE 8000
 
-RUN yarn prisma generate
 
 RUN rm -f .env
 
