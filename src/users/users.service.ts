@@ -573,6 +573,11 @@ export class UsersService {
           Facility: {
             select: {
               name: true,
+              EmergencyContact: {
+                select: {
+                  phone: true,
+                }
+              }
             },
           },
         },
