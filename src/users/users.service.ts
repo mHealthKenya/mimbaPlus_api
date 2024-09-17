@@ -267,7 +267,14 @@ export class UsersService {
               name: true,
               id: true,
             },
+
           },
+
+          BioData: {
+            select: {
+              age: true,
+            }
+          }
         },
       })
       .then((data) => data)
@@ -479,6 +486,43 @@ export class UsersService {
       });
 
     return all;
+  }
+
+
+  async mothersRegisteredByCHVS() {
+    const chvs = await this.prisma.user.findMany({
+      where: {
+        role: 'CHV'
+      },
+      select: {
+        id: true,
+        f_name: true,
+        l_name: true
+      }
+    })
+
+    const mothers = await this.prisma.user.findMany({
+      where: {
+        role: 'Mother'
+      },
+      select: {
+        id: true,
+        f_name: true,
+        l_name: true,
+        createdById: true
+      }
+    })
+
+    const mothersByCHV = chvs.map(chv => {
+      const count = mothers.filter(mother => mother.createdById === chv.id).length
+      return {
+        chvId: chv.id,
+        chvName: chv.f_name + ' ' + chv.l_name,
+        count
+      }
+    })
+
+    return mothersByCHV
   }
 
   async usersByRole() {

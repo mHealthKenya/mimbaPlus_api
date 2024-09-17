@@ -22,7 +22,7 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @UseGuards(RolesGuard)
   @UserRoles(Roles.CHV, Roles.ADMIN)
@@ -125,5 +125,10 @@ export class UsersController {
   @Get('individual')
   getIndividual() {
     return this.usersService.getUser();
+  }
+
+  @Get('reg')
+  getReg() {
+    return this.usersService.mothersRegisteredByCHVS();
   }
 }
