@@ -252,6 +252,26 @@ export class UsersService {
       });
   }
 
+  async getUserInternal(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id
+      },
+      select: {
+        f_name: true,
+        l_name: true
+      }
+    })
+
+    if (!user) {
+      return null
+    }
+
+    const fullName = user.f_name + " " + user.l_name
+
+    return fullName
+  }
+
   async getUsersByRole(data: GetUserByRole) {
     const { role } = data;
 
@@ -277,7 +297,12 @@ export class UsersService {
           }
         },
       })
-      .then((data) => data)
+      .then(async (data) => {
+        return await Promise.all(data.map(async item => ({
+          ...item,
+          fullName: await this.getUserInternal(item.createdById)
+        })))
+      })
       .catch((err) => {
         throw new BadRequestException(err);
       });

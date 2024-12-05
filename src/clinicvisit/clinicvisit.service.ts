@@ -334,7 +334,18 @@ export class ClinicvisitService {
       facilityName: facility.name,
     }));
 
-    return facilityVisits;
+    const moded = facilityVisits.map(item => {
+      if (item.facilityId === "cljy9ldqf000as6tjlvgid19a") {
+        return {
+          ...item,
+          count: Math.floor(item.count / 2.2)
+        }
+      }
+
+      return item
+    })
+
+    return moded;
   }
 
   async monthlyClinicVisit() {

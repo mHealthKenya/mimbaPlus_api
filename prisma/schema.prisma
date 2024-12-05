@@ -58,14 +58,14 @@ model BioData {
   id                     String        @id @default(cuid())
   user                   User          @relation(fields: [userId], references: [id])
   userId                 String        @unique
-  height                 Float
-  weight                 Float
+  height                 Float?
+  weight                 Float?
   active                 Boolean       @default(true)
-  parity                 Int?
+  parity                 String?
   age                    Float
-  last_monthly_period    DateTime
-  expected_delivery_date DateTime
-  pregnancy_period       Float // pregnancy period in weeks
+  last_monthly_period    DateTime?
+  expected_delivery_date DateTime?
+  pregnancy_period       Float? // pregnancy period in weeks
   last_clinic_visit      DateTime
   facility               Facility      @relation(fields: [facilityId], references: [id])
   facilityId             String
