@@ -300,7 +300,7 @@ export class UsersService {
       .then(async (data) => {
         return await Promise.all(data.map(async item => ({
           ...item,
-          fullName: await this.getUserInternal(item.createdById)
+          name: await this.getUserInternal(item.createdById)
         })))
       })
       .catch((err) => {

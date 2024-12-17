@@ -15,7 +15,7 @@ export class AuthMiddleware implements NestMiddleware {
   constructor(
     private readonly userHelper: UserHelper,
     private readonly prisma: PrismaService,
-  ) {}
+  ) { }
   async use(req: Request, res: Response, next: NextFunction) {
     const token = req?.headers?.authorization?.split(' ')[1];
 
@@ -35,6 +35,8 @@ export class AuthMiddleware implements NestMiddleware {
       if (!user) {
         throw new ForbiddenException('Invalid access token');
       }
+
+      console.log({ role: user.role })
 
       this.userHelper.setUser({
         email: user.email,
