@@ -49,15 +49,15 @@ export class BiodataService {
     const data = { ...baseData, ...optionalData };
 
     try {
-      // const newBiodata = await this.prisma.bioData.upsert({
-      //   where: {
-      //     userId: createBiodatumDto.userId,
-      //   },
-      //   update: data,
-      //   create: data,
-      // });
+      const newBiodata = await this.prisma.bioData.upsert({
+        where: {
+          userId: createBiodatumDto.userId,
+        },
+        update: data,
+        create: data,
+      });
 
-      // return newBiodata;
+      return newBiodata;
     } catch (err) {
       console.error(err);
       throw new BadRequestException(err);
