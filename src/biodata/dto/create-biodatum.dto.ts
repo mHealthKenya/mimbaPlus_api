@@ -14,30 +14,30 @@ export class CreateBiodatumDto {
   @IsString()
   userId: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumberString()
-  height: number;
+  height?: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumberString()
-  weight: number;
+  weight?: number;
 
   @IsNotEmpty()
   @IsNumberString() // Transform string to number
   age: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsDateString()
-  last_monthly_period: string;
+  last_monthly_period?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsDateString()
-  expected_delivery_date: string;
+  expected_delivery_date?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsNumberString()
   @Matches(/^(?:[0-9]|[1-4][0-9]|50)$/, { message: 'Invalid pregnancy input' })
-  pregnancy_period: number;
+  pregnancy_period?: number;
 
   @IsNotEmpty()
   @IsDateString()

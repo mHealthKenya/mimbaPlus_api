@@ -23,10 +23,11 @@ import { GetUserDto } from './dto/get-users.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @UseGuards(RolesGuard)
-  @UserRoles(Roles.CHV, Roles.ADMIN)
+  // @UserRoles(Roles.CHV, Roles.ADMIN)
+  @UserRoles(Roles.ADMIN)
   @Post('add')
   async createUser(@Body() createUser: CreateUserDto) {
     return this.usersService.createUser(createUser);
@@ -123,6 +124,13 @@ export class UsersController {
     return this.usersService.countUsersByRole();
   }
 
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('motherstats')
+  motherStatus() {
+    return this.usersService.motherStats();
+  }
+
   @Get('individual')
   getIndividual() {
     return this.usersService.getUser();
@@ -130,6 +138,6 @@ export class UsersController {
 
   @Get('mothers-registered')
   getMothersRegistered(@Query() data: GetUserDto) {
-    return this.usersService.mothersRegistered(data)
+    return this.usersService.mothersRegistered(data);
   }
 }

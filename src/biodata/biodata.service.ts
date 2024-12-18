@@ -9,53 +9,59 @@ export class BiodataService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userHelper: UserHelper,
-  ) { }
-  async create(createBiodatumDto: CreateBiodatumDto) {
-    const newBiodata = await this.prisma.bioData
-      .upsert({
-        where: {
-          userId: createBiodatumDto.userId,
-        },
-        update: {
-          ...createBiodatumDto,
-          height: +createBiodatumDto.height,
-          weight: +createBiodatumDto.weight,
-          age: +createBiodatumDto.age,
-          last_monthly_period: new Date(createBiodatumDto.last_monthly_period),
-          expected_delivery_date: new Date(
-            createBiodatumDto.expected_delivery_date,
-          ),
-          pregnancy_period: +createBiodatumDto.pregnancy_period,
-          last_clinic_visit: new Date(createBiodatumDto.last_clinic_visit),
-          gravidity: +createBiodatumDto.gravidity || 0,
-          parity: createBiodatumDto.parity,
-          createdById: this.userHelper.getUser().id,
-          updatedById: this.userHelper.getUser().id,
-        },
-        create: {
-          ...createBiodatumDto,
-          height: +createBiodatumDto.height,
-          weight: +createBiodatumDto.weight,
-          age: +createBiodatumDto.age,
-          last_monthly_period: new Date(createBiodatumDto.last_monthly_period),
-          expected_delivery_date: new Date(
-            createBiodatumDto.expected_delivery_date,
-          ),
-          pregnancy_period: +createBiodatumDto.pregnancy_period,
-          last_clinic_visit: new Date(createBiodatumDto.last_clinic_visit),
-          gravidity: +createBiodatumDto.gravidity || 0,
-          parity: createBiodatumDto.parity,
-          createdById: this.userHelper.getUser().id,
-          updatedById: this.userHelper.getUser().id,
-        },
-      })
+  ) {}
+  async create({
+    height,
+    expected_delivery_date,
+    last_monthly_period,
+    pregnancy_period,
+    parity,
+    gravidity,
+    ...createBiodatumDto
+  }: CreateBiodatumDto) {
+    const userId = this.userHelper.getUser().id;
 
-      .then((data) => data)
-      .catch((err) => {
-        throw new BadRequestException(err);
-      });
+    // Dynamically build the update and create objects
+    const baseData = {
+      ...createBiodatumDto,
+      weight: +createBiodatumDto.weight,
+      age: +createBiodatumDto.age,
+      last_clinic_visit: createBiodatumDto.last_clinic_visit
+        ? new Date(createBiodatumDto.last_clinic_visit)
+        : null,
+      createdById: userId,
+      updatedById: userId,
+    };
 
-    return newBiodata;
+    const optionalData = {
+      ...(height ? { height: +height } : {}),
+      ...(last_monthly_period
+        ? { last_monthly_period: new Date(last_monthly_period) }
+        : {}),
+      ...(expected_delivery_date
+        ? { expected_delivery_date: new Date(expected_delivery_date) }
+        : {}),
+      ...(pregnancy_period ? { pregnancy_period: +pregnancy_period } : {}),
+      ...(parity ? { parity: parity } : {}),
+      ...(gravidity ? { gravidity: +gravidity } : {}),
+    };
+
+    const data = { ...baseData, ...optionalData };
+
+    try {
+      // const newBiodata = await this.prisma.bioData.upsert({
+      //   where: {
+      //     userId: createBiodatumDto.userId,
+      //   },
+      //   update: data,
+      //   create: data,
+      // });
+
+      // return newBiodata;
+    } catch (err) {
+      console.error(err);
+      throw new BadRequestException(err);
+    }
   }
 
   async getById(id: string) {
@@ -133,7 +139,7 @@ export class BiodataService {
           last_clinic_visit:
             data.last_clinic_visit && new Date(data.last_clinic_visit),
           gravidity: data?.gravidity || 0,
-          parity: data.parity,
+          parity: data?.parity || '0',
           createdById: this.userHelper.getUser().id,
           updatedById: this.userHelper.getUser().id,
         },
@@ -162,7 +168,7 @@ export class BiodataService {
               select: {
                 balance: true,
               },
-            }
+            },
           },
         },
       },

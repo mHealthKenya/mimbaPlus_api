@@ -50,8 +50,8 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
     private readonly userHelper: UserHelper,
-    private readonly smsService: SendsmsService
-  ) { }
+    private readonly smsService: SendsmsService,
+  ) {}
 
   async createUser(createUser: CreateUserDto) {
     const id = uuidv4();
@@ -179,8 +179,7 @@ export class UsersService {
       throw new BadRequestException('Email and Password are required');
     }
 
-
-    let user = null
+    let user = null;
 
     if (emailRegex.test(email)) {
       user = await this.prisma.user.findUnique({
@@ -253,6 +252,25 @@ export class UsersService {
       });
   }
 
+  async getUserInternal(id: string) {
+    const user = await this.prisma.user
+      .findUnique({
+        where: { id },
+        select: {
+          f_name: true,
+          l_name: true,
+        },
+      })
+      .then((data) => {
+        if (!data) {
+          return null;
+        }
+        const fullName = data.f_name + ' ' + data.l_name;
+        return fullName;
+      });
+    return user;
+  }
+
   async getUsersByRole(data: GetUserByRole) {
     const { role } = data;
 
@@ -268,17 +286,24 @@ export class UsersService {
               name: true,
               id: true,
             },
-
           },
 
           BioData: {
             select: {
               age: true,
-            }
-          }
+            },
+          },
         },
       })
-      .then((data) => data)
+      // .then((data) => data)
+      .then(async (data) => {
+        return await Promise.all(
+          data.map(async (item) => {
+            const fullName = await this.getUserInternal(item.createdById);
+            return { ...item, name: fullName };
+          }),
+        );
+      })
       .catch((err) => {
         throw new BadRequestException(err);
       });
@@ -301,6 +326,22 @@ export class UsersService {
       });
 
     return users;
+  }
+
+  async motherStats() {
+    const motherstatistics = await this.prisma.user.groupBy({
+      by: ['active'],
+
+      _count: {
+        active: true,
+      },
+
+      where: {
+        role: 'Mother',
+      },
+    });
+
+    return motherstatistics;
   }
 
   async getUserByRoleAndFacility(data: GetUserByRoleAndFacility) {
@@ -349,16 +390,13 @@ export class UsersService {
   }
 
   async passwordResetRequest(email: string) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^254[0-9]{9}$/;
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    const phoneRegex = /^254[0-9]{9}$/
+    let user = null;
 
-
-    let user = null
-
-    const isEmail = emailRegex.test(email)
-    const isPhone = phoneRegex.test(email)
-
+    const isEmail = emailRegex.test(email);
+    const isPhone = phoneRegex.test(email);
 
     if (isEmail) {
       user = await this.prisma.user.findUnique({
@@ -392,11 +430,14 @@ export class UsersService {
       .then((data) => {
         this.eventEmitter.emit(
           'password.request',
-          new PasswordResetRequestEvent({
-            type: isEmail ? 'email' : 'phone',
-            email: user.email,
-            phone: user.phone_number
-          }, data.code),
+          new PasswordResetRequestEvent(
+            {
+              type: isEmail ? 'email' : 'phone',
+              email: user.email,
+              phone: user.phone_number,
+            },
+            data.code,
+          ),
         );
         return {
           message: 'Password reset code successfully sent',
@@ -489,41 +530,42 @@ export class UsersService {
     return all;
   }
 
-
   async mothersRegisteredByCHVS() {
     const chvs = await this.prisma.user.findMany({
       where: {
-        role: 'CHV'
-      },
-      select: {
-        id: true,
-        f_name: true,
-        l_name: true
-      }
-    })
-
-    const mothers = await this.prisma.user.findMany({
-      where: {
-        role: 'Mother'
+        role: 'CHV',
       },
       select: {
         id: true,
         f_name: true,
         l_name: true,
-        createdById: true
-      }
-    })
+      },
+    });
 
-    const mothersByCHV = chvs.map(chv => {
-      const count = mothers.filter(mother => mother.createdById === chv.id).length
+    const mothers = await this.prisma.user.findMany({
+      where: {
+        role: 'Mother',
+      },
+      select: {
+        id: true,
+        f_name: true,
+        l_name: true,
+        createdById: true,
+      },
+    });
+
+    const mothersByCHV = chvs.map((chv) => {
+      const count = mothers.filter(
+        (mother) => mother.createdById === chv.id,
+      ).length;
       return {
         chvId: chv.id,
         chvName: chv.f_name + ' ' + chv.l_name,
-        count
-      }
-    })
+        count,
+      };
+    });
 
-    return mothersByCHV
+    return mothersByCHV;
   }
 
   async usersByRole() {
@@ -620,8 +662,8 @@ export class UsersService {
               EmergencyContact: {
                 select: {
                   phone: true,
-                }
-              }
+                },
+              },
             },
           },
         },
@@ -640,44 +682,44 @@ export class UsersService {
     return user;
   }
 
-
   async mothersRegistered({ userId }: GetUserDto) {
-
     const ms = this.prisma.user.findMany({
       where: {
         createdById: userId,
-        role: Roles.MOTHER
+        role: Roles.MOTHER,
       },
 
       include: {
         Facility: {
           select: {
-            name: true
-          }
-        }
-      }
-    })
+            name: true,
+          },
+        },
+      },
+    });
 
     const cs = this.prisma.user.count({
       where: {
         createdById: userId,
-        role: Roles.MOTHER
-      }
-    })
+        role: Roles.MOTHER,
+      },
+    });
 
-    const [mothers, count] = await this.prisma.$transaction([ms, cs])
+    const [mothers, count] = await this.prisma.$transaction([ms, cs]);
 
     return {
       mothers,
-      count
-    }
+      count,
+    };
   }
 
   @OnEvent('password.request')
   async handlePasswordRequest(data: PasswordResetRequestEvent) {
-    const { options: { type, email, phone } } = data;
+    const {
+      options: { type, email, phone },
+    } = data;
 
-    if (type === "email") {
+    if (type === 'email') {
       const msg = emailBodyPass(data);
 
       await new SendEmail(
@@ -686,14 +728,12 @@ export class UsersService {
         'We have received a request to reset your password',
         msg,
       ).send();
-    } else if (type === "phone") {
-
+    } else if (type === 'phone') {
       await this.smsService.sendSMSFn({
-        phoneNumber: "+" + phone,
-        message: `Your password reset code is ${data.code}`
-      })
+        phoneNumber: '+' + phone,
+        message: `Your password reset code is ${data.code}`,
+      });
     }
-
   }
 
   @OnEvent('user.created')
