@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -21,91 +18,93 @@ model User {
   active                 Boolean               @default(true)
   password               String
   role                   String                @default("Unassigned")
-  hasWallet              Boolean               @default(false)
   createdAt              DateTime              @default(now())
   updatedAt              DateTime              @updatedAt
-  BioData                BioData[]
-  Appointments           Appointments[]
-  Incidents              Incidents[]
-  Reporter               Incidents[]           @relation("reporter")
-  FollowUpRequests       FollowUpRequests[]
-  FollowUpRequestsMother FollowUpRequests[]    @relation("mother")
   facilityAdmin          String?
-  CHVTargets             CHVTargets[]
-  Facility               Facility?             @relation(fields: [facilityId], references: [id])
   facilityId             String?
+  createdById            String?
+  hasWallet              Boolean               @default(false)
+  Appointments           Appointments[]
   BiodatumCreated        BioData[]             @relation("createdBy")
   BioDatumUpdated        BioData[]             @relation("updatedBy")
-  Schedule               Schedule[]            @relation("mother")
-  CreatedBy              Schedule[]            @relation("createdBy")
-  UpdateBy               Schedule[]            @relation("updatedBy")
-  FollowUp               FollowUp[]
-  BirthPlan              BirthPlan[]
-  ConsentForm            ConsentForm[]
-  createdById            String?
-  Enquiries              Enquiries[]
+  BioData                BioData?
+  BirthPlan              BirthPlan?
+  CHVTargets             CHVTargets?
+  ConsentForm            ConsentForm?
   RepliedBy              Enquiries[]           @relation("repliedBy")
-  Wallet                 Wallet[]
-  WalletTransaction      WalletTransaction[]
-  Transaction            WalletTransaction[]   @relation("transactionCreatedBy")
-  WalletApproval         WalletTransaction[]   @relation("approvedBy")
+  Enquiries              Enquiries[]
+  FollowUp               FollowUp[]
+  FollowUpRequests       FollowUpRequests[]
+  FollowUpRequestsMother FollowUpRequests[]    @relation("mother")
+  Incidents              Incidents[]
+  Reporter               Incidents[]           @relation("reporter")
+  CreatedBy              Schedule[]            @relation("createdBy")
+  Schedule               Schedule[]            @relation("mother")
+  UpdateBy               Schedule[]            @relation("updatedBy")
+  TransactionReversal    TransactionReversal[]
+  Facility               Facility?             @relation(fields: [facilityId], references: [id])
+  Wallet                 Wallet?
   WalletBase             WalletBase[]
   WalletCodes            WalletCodes[]
-  TransactionReversal    TransactionReversal[]
+  WalletApproval         WalletTransaction[]   @relation("approvedBy")
+  Transaction            WalletTransaction[]   @relation("transactionCreatedBy")
+  WalletTransaction      WalletTransaction[]
+  Admission              Admission[]
+  AdmissionOfficer       Admission[]           @relation("AdmissionOfficer")
+  Discharge              Discharge[]
+  DischargeRequest       DischargeRequest[]
 }
 
 model BioData {
   id                     String        @id @default(cuid())
-  user                   User          @relation(fields: [userId], references: [id])
   userId                 String        @unique
   height                 Float?
   weight                 Float?
   active                 Boolean       @default(true)
-  parity                 String?
   age                    Float
   last_monthly_period    DateTime?
   expected_delivery_date DateTime?
-  pregnancy_period       Float? // pregnancy period in weeks
+  pregnancy_period       Float?
   last_clinic_visit      DateTime
-  facility               Facility      @relation(fields: [facilityId], references: [id])
   facilityId             String
   gravidity              Float?        @default(0)
-  createdBy              User          @relation(fields: [createdById], references: [id], "createdBy")
   createdById            String
-  updatedBy              User          @relation(fields: [updatedById], references: [id], "updatedBy")
   updatedById            String
   createdAt              DateTime      @default(now())
   updatedAt              DateTime      @updatedAt
+  parity                 String?
+  createdBy              User          @relation("createdBy", fields: [createdById], references: [id])
+  facility               Facility      @relation(fields: [facilityId], references: [id])
+  updatedBy              User          @relation("updatedBy", fields: [updatedById], references: [id])
+  user                   User          @relation(fields: [userId], references: [id])
   ClinicVisit            ClinicVisit[]
 }
 
-//TODO Ask for details to be captured in registering a facility
 model Facility {
-  id                  String                @id @default(cuid())
-  name                String                @unique
-  hasWallet           Boolean               @default(false)
-  BioData             BioData[]
+  id                  String               @id @default(cuid())
+  name                String               @unique
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  status              String               @default("Active")
+  hasWallet           Boolean              @default(false)
   Appointments        Appointments[]
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
-  status              String                @default("Active")
-  FollowUpRequests    FollowUpRequests[]
-  LocationCoordinates LocationCoordinates[]
-  users               User[]
-  Schedule            Schedule[]
-  ClinicVisit         ClinicVisit[]
+  BioData             BioData[]
   BirthPlan           BirthPlan[]
+  ClinicVisit         ClinicVisit[]
+  EmergencyContact    EmergencyContact?
   Enquiries           Enquiries[]
-  FacilityWallet      FacilityWallet[]
+  FacilityWallet      FacilityWallet?
+  FollowUpRequests    FollowUpRequests[]
+  LocationCoordinates LocationCoordinates?
+  Schedule            Schedule[]
+  users               User[]
   WalletTransaction   WalletTransaction[]
-  EmergencyContact    EmergencyContact[]
+  Admission           Admission[]
 }
 
 model Appointments {
   id          String   @id @default(cuid())
-  user        User     @relation(fields: [userId], references: [id])
   userId      String
-  facility    Facility @relation(fields: [facilityId], references: [id])
   facilityId  String
   date        DateTime
   status      String
@@ -113,33 +112,35 @@ model Appointments {
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  facility    Facility @relation(fields: [facilityId], references: [id])
+  user        User     @relation(fields: [userId], references: [id])
 }
 
 model Incidents {
   id                String   @id @default(cuid())
-  reportedBy        User     @relation(fields: [reportedById], references: [id], "reporter")
   reportedById      String
-  mother_affected   User     @relation(fields: [motherId], references: [id])
   motherId          String
   description       String
   incident_time     DateTime
-  incident_duration String //TODO ask for clarification on incident times
+  incident_duration String
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  mother_affected   User     @relation(fields: [motherId], references: [id])
+  reportedBy        User     @relation("reporter", fields: [reportedById], references: [id])
 }
 
 model FollowUpRequests {
   id          String   @id @default(cuid())
-  facility    Facility @relation(fields: [facilityId], references: [id])
   facilityId  String
-  user        User     @relation(fields: [chvId], references: [id])
-  chvId       String // This is the CHV user
-  mother      User     @relation(fields: [userId], references: [id], "mother")
+  chvId       String
   userId      String
   status      String   @default("Pending")
   description String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [chvId], references: [id])
+  facility    Facility @relation(fields: [facilityId], references: [id])
+  mother      User     @relation("mother", fields: [userId], references: [id])
 }
 
 model Resources {
@@ -153,22 +154,22 @@ model Resources {
 
 model CHVTargets {
   id        String   @id @default(cuid())
-  chv       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  setTarget Int      @default(0) //Number of mothers to register
-  current   Int      @default(0) //Mothers currently registered
+  setTarget Int      @default(0)
+  current   Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId    String   @unique
+  chv       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model LocationCoordinates {
   id         String   @id @default(cuid())
   lat        Float
   lng        Float
-  facility   Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   facilityId String   @unique
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  facility   Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 }
 
 model ResetCode {
@@ -181,47 +182,45 @@ model ResetCode {
 }
 
 model Schedule {
-  id          String     @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   description String
-  facility    Facility   @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   facilityId  String
   date        DateTime
-  status      String     @default("Scheduled")
-  mother      User       @relation(fields: [motherId], references: [id], "mother")
+  status      String    @default("Scheduled")
   motherId    String
-  createdBy   User       @relation(fields: [createdById], references: [id], "createdBy")
   createdById String
-  updatedBy   User       @relation(fields: [updatedById], references: [id], "updatedBy")
   updatedById String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  FollowUp    FollowUp[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  FollowUp    FollowUp?
+  createdBy   User      @relation("createdBy", fields: [createdById], references: [id])
+  facility    Facility  @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  mother      User      @relation("mother", fields: [motherId], references: [id])
+  updatedBy   User      @relation("updatedBy", fields: [updatedById], references: [id])
 
   @@unique([motherId, date])
 }
 
 model FollowUp {
   id         String   @id @default(cuid())
-  schedule   Schedule @relation(fields: [scheduleId], references: [id])
   scheduleId String   @unique
-  chv        User     @relation(fields: [chvId], references: [id])
   chvId      String
   status     String   @default("Sent")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now())
+  chv        User     @relation(fields: [chvId], references: [id])
+  schedule   Schedule @relation(fields: [scheduleId], references: [id])
 }
 
 model ClinicVisit {
-  id                   String              @id @default(cuid())
-  bioData              BioData             @relation(fields: [bioDataId], references: [id])
+  id                   String             @id @default(cuid())
   bioDataId            String
-  facility             Facility            @relation(fields: [facilityId], references: [id])
   facilityId           String
   weight               String
-  hiv                  String              @default("Not tested")
+  hiv                  String             @default("Not tested")
   hivTestDate          DateTime?
-  tetanus              String?             @default("Not injected")
+  tetanus              String?            @default("Not injected")
   tetanusInjectionDate DateTime?
   hbLevel              String
   rhesusFactor         String
@@ -229,23 +228,23 @@ model ClinicVisit {
   urinalysis           String
   vdrl                 String
   bloodRBS             String
-  TB                   String              @default("Not tested")
-  hepatitisB           String              @default("Not tested")
+  TB                   String             @default("Not tested")
+  hepatitisB           String             @default("Not tested")
   notes                String?
   treatment            String?
-  date                 DateTime            @default(now())
-  billed               Boolean             @default(false)
-  createdAt            DateTime            @default(now())
-  updatedAt            DateTime            @updatedAt
-  WalletTransaction    WalletTransaction[]
+  date                 DateTime           @default(now())
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  billed               Boolean            @default(false)
+  bioData              BioData            @relation(fields: [bioDataId], references: [id])
+  facility             Facility           @relation(fields: [facilityId], references: [id])
   WalletCodes          WalletCodes[]
+  WalletTransaction    WalletTransaction?
 }
 
 model BirthPlan {
   id                             String   @id @default(cuid())
-  mother                         User     @relation(fields: [motherId], references: [id])
   motherId                       String   @unique
-  facility                       Facility @relation(fields: [facilityId], references: [id])
   facilityId                     String
   delivery_mode                  String
   support_person_name            String?
@@ -263,14 +262,16 @@ model BirthPlan {
   other_facility                 String?
   createdAt                      DateTime @default(now())
   updatedAr                      DateTime @updatedAt
+  facility                       Facility @relation(fields: [facilityId], references: [id])
+  mother                         User     @relation(fields: [motherId], references: [id])
 }
 
 model ConsentForm {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
   userId    String   @unique
   accepted  Boolean  @default(true)
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Message {
@@ -285,99 +286,147 @@ model Message {
 
 model Enquiries {
   id               String    @id @default(cuid())
-  sender           User      @relation(fields: [senderId], references: [id])
   senderId         String
   title            String
   description      String
   replyTitle       String?
   replyDescription String?
-  facility         Facility? @relation(fields: [facilityId], references: [id])
   facilityId       String?
-  repliedBy        User?     @relation(fields: [repliedById], references: [id], "repliedBy")
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   repliedById      String?
+  facility         Facility? @relation(fields: [facilityId], references: [id])
+  repliedBy        User?     @relation("repliedBy", fields: [repliedById], references: [id])
+  sender           User      @relation(fields: [senderId], references: [id])
 }
 
 model Wallet {
   id        String   @id @default(cuid())
-  user      User     @relation(fields: [userId], references: [id])
   userId    String   @unique
   balance   Float
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model FacilityWallet {
   id         String   @id @default(cuid())
-  facility   Facility @relation(fields: [facilityId], references: [id])
   facilityId String   @unique
   balance    Float?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  facility   Facility @relation(fields: [facilityId], references: [id])
 }
 
 model WalletTransaction {
   id                  String                @id @default(cuid())
-  user                User                  @relation(fields: [userId], references: [id])
-  clinicVisit         ClinicVisit           @relation(fields: [clinicVisitId], references: [id])
   clinicVisitId       String                @unique
   userId              String
   points              Float
   previousPoints      Float                 @default(0)
   balance             Float                 @default(0)
-  facility            Facility              @relation(fields: [facilityId], references: [id])
-  createdBy           User                  @relation(fields: [createdById], references: [id], "transactionCreatedBy")
   createdById         String
-  approvedBy          User?                 @relation(fields: [approvedById], references: [id], "approvedBy")
   approvedById        String?
   createdAt           DateTime              @default(now())
   updatedAt           DateTime              @updatedAt
   facilityId          String
   rejected            Boolean               @default(false)
   TransactionReversal TransactionReversal[]
+  approvedBy          User?                 @relation("approvedBy", fields: [approvedById], references: [id])
+  clinicVisit         ClinicVisit           @relation(fields: [clinicVisitId], references: [id])
+  createdBy           User                  @relation("transactionCreatedBy", fields: [createdById], references: [id])
+  facility            Facility              @relation(fields: [facilityId], references: [id])
+  user                User                  @relation(fields: [userId], references: [id])
 }
 
 model WalletBase {
   id         String   @id @default(cuid())
-  modifiedBy User     @relation(fields: [userId], references: [id])
   userId     String
   points     Float
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  modifiedBy User     @relation(fields: [userId], references: [id])
 }
 
 model WalletCodes {
   id            String      @id @default(cuid())
-  user          User        @relation(fields: [userId], references: [id])
   userId        String
-  visit         ClinicVisit @relation(fields: [clinicVisitId], references: [id])
   clinicVisitId String
   code          String
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  visit         ClinicVisit @relation(fields: [clinicVisitId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
 
   @@unique([userId, code], name: "walletCode")
 }
 
 model TransactionReversal {
   id                  String            @id @default(cuid())
-  reversedBy          User              @relation(fields: [userId], references: [id])
-  transaction         WalletTransaction @relation(fields: [walletTransactionId], references: [id])
   walletTransactionId String
   reason              String
   userId              String
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
+  reversedBy          User              @relation(fields: [userId], references: [id])
+  transaction         WalletTransaction @relation(fields: [walletTransactionId], references: [id])
 }
 
 model EmergencyContact {
   id         String   @id @default(cuid())
-  facility   Facility @relation(fields: [facilityId], references: [id])
   facilityId String   @unique
   phone      String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  facility   Facility @relation(fields: [facilityId], references: [id])
 }
 
-//TODO ask to create a table to record clinical visits
+model Admission {
+  id               String             @id @default(cuid())
+  user             User               @relation(fields: [userId], references: [id])
+  userId           String
+  facility         Facility           @relation(fields: [facilityId], references: [id])
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  facilityId       String
+  admittedBy       User               @relation("AdmissionOfficer", fields: [admittedById], references: [id])
+  admittedById     String
+  status           AdmissionStatus    @default(Admitted)
+  DischargeRequest DischargeRequest[]
+}
+
+enum AdmissionStatus {
+  Admitted
+  Discharged
+}
+
+model DischargeRequest {
+  id          String                 @id @default(cuid())
+  admission   Admission              @relation(fields: [admissionId], references: [id])
+  admissionId String
+  files       String[]
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  Discharge   Discharge[]
+  requestedBy User                   @relation(fields: [userId], references: [id])
+  userId      String
+  status      DischargeRequestStatus @default(Pending)
+}
+
+model Discharge {
+  id                 String           @id @default(cuid())
+  walletAmount       Float
+  settleAmount       Float            @default(0)
+  request            DischargeRequest @relation(fields: [dischargeRequestId], references: [id])
+  dischargeRequestId String
+  approvedBy         User             @relation(fields: [userId], references: [id])
+  userId             String
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+enum DischargeRequestStatus {
+  Pending
+  Approved
+  Rejected
+}
