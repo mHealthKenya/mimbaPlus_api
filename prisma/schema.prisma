@@ -53,6 +53,7 @@ model User {
   AdmissionOfficer       Admission[]           @relation("AdmissionOfficer")
   Discharge              Discharge[]
   DischargeRequest       DischargeRequest[]
+  DischargeProcessed     DischargeRequest[]    @relation("processedBy")
 }
 
 model BioData {
@@ -320,7 +321,8 @@ model FacilityWallet {
 
 model WalletTransaction {
   id                  String                @id @default(cuid())
-  clinicVisitId       String                @unique
+  clinicVisitId       String?               @unique
+  discharge           Discharge?            @relation(fields: [dischargeId], references: [id])
   userId              String
   points              Float
   previousPoints      Float                 @default(0)
@@ -333,10 +335,11 @@ model WalletTransaction {
   rejected            Boolean               @default(false)
   TransactionReversal TransactionReversal[]
   approvedBy          User?                 @relation("approvedBy", fields: [approvedById], references: [id])
-  clinicVisit         ClinicVisit           @relation(fields: [clinicVisitId], references: [id])
+  clinicVisit         ClinicVisit?          @relation(fields: [clinicVisitId], references: [id])
   createdBy           User                  @relation("transactionCreatedBy", fields: [createdById], references: [id])
   facility            Facility              @relation(fields: [facilityId], references: [id])
   user                User                  @relation(fields: [userId], references: [id])
+  dischargeId         String?
 }
 
 model WalletBase {
@@ -398,31 +401,36 @@ model Admission {
 enum AdmissionStatus {
   Admitted
   Discharged
+  Rejected
+  Processing
 }
 
 model DischargeRequest {
-  id          String                 @id @default(cuid())
-  admission   Admission              @relation(fields: [admissionId], references: [id])
-  admissionId String
-  files       String[]
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
-  Discharge   Discharge[]
-  requestedBy User                   @relation(fields: [userId], references: [id])
-  userId      String
-  status      DischargeRequestStatus @default(Pending)
+  id            String                 @id @default(cuid())
+  admission     Admission              @relation(fields: [admissionId], references: [id])
+  admissionId   String
+  files         String[]
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  Discharge     Discharge[]
+  requestedBy   User                   @relation(fields: [userId], references: [id])
+  userId        String
+  status        DischargeRequestStatus @default(Pending)
+  processedBy   User?                  @relation("processedBy", fields: [processedById], references: [id])
+  processedById String?
 }
 
 model Discharge {
-  id                 String           @id @default(cuid())
+  id                 String              @id @default(cuid())
   walletAmount       Float
-  settleAmount       Float            @default(0)
-  request            DischargeRequest @relation(fields: [dischargeRequestId], references: [id])
+  settleAmount       Float               @default(0)
+  request            DischargeRequest    @relation(fields: [dischargeRequestId], references: [id])
   dischargeRequestId String
-  approvedBy         User             @relation(fields: [userId], references: [id])
+  approvedBy         User                @relation(fields: [userId], references: [id])
   userId             String
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  WalletTransaction  WalletTransaction[]
 }
 
 enum DischargeRequestStatus {

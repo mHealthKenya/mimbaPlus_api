@@ -3,6 +3,7 @@ import { UserHelper } from 'src/helpers/user-helper';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAdmissionDto } from './dto/create-admission.dto';
 import { GetAdmissionDto } from './dto/get-admission.dto';
+import { GetFacilityAdmissionsDto } from './dto/facility-admissions';
 
 export enum AdmissionStatus {
   ADMITTED = 'Admitted',
@@ -117,7 +118,7 @@ export class AdmissionsService {
   }
 
 
-  async facilityAdmissions() {
+  async facilityAdmissions({ status }: GetFacilityAdmissionsDto) {
 
     const userId = await this.userHelper.getUser().id;
 
@@ -137,7 +138,11 @@ export class AdmissionsService {
 
     const admissions = await this.prisma.admission.findMany({
       where: {
-        facilityId
+        facilityId,
+        status
+      },
+      orderBy: {
+        updatedAt: 'desc'
       },
       include: {
         admittedBy: {
@@ -169,4 +174,41 @@ export class AdmissionsService {
   }
 
 
+  async allAdmissions({ status }: GetFacilityAdmissionsDto) {
+    const admissions = await this.prisma.admission.findMany({
+      where: {
+        status
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      },
+      include: {
+        admittedBy: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true,
+          }
+        },
+
+        user: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true,
+            Wallet: {
+              select: {
+                balance: true
+              }
+            }
+          }
+        }
+      }
+    }).then(data => data).catch(err => {
+      throw new BadRequestException(err)
+    })
+
+    return admissions;
+
+  }
 }

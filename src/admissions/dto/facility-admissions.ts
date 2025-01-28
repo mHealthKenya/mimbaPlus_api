@@ -1,7 +1,9 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { AdmissionStatus } from "@prisma/client";
+import { IsEnum, IsNotEmpty } from "class-validator";
 
 export class GetFacilityAdmissionsDto {
     @IsNotEmpty()
-    @IsString()
-    facilityId: string;
+    @IsEnum(AdmissionStatus, { message: 'status must be either Admitted, Discharged or Processing' })
+    status: AdmissionStatus;
 }
+

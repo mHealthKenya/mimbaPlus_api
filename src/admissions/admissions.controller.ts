@@ -5,6 +5,7 @@ import { Roles } from 'src/users/users.service';
 import { AdmissionsService } from './admissions.service';
 import { CreateAdmissionDto } from './dto/create-admission.dto';
 import { GetAdmissionDto } from './dto/get-admission.dto';
+import { GetFacilityAdmissionsDto } from './dto/facility-admissions';
 
 @Controller('admissions')
 export class AdmissionsController {
@@ -20,8 +21,8 @@ export class AdmissionsController {
   @UseGuards(RolesGuard)
   @UserRoles(Roles.ADMIN)
   @Get()
-  findAll() {
-    return this.admissionsService.findAll();
+  findAll(@Query() status: GetFacilityAdmissionsDto) {
+    return this.admissionsService.allAdmissions(status);
   }
 
   @UseGuards(RolesGuard)
@@ -35,9 +36,8 @@ export class AdmissionsController {
   @UseGuards(RolesGuard)
   @UserRoles(Roles.FACILITY)
   @Get('facility')
-  findFacilityAdmissions() {
-    return this.admissionsService.facilityAdmissions();
+  findFacilityAdmissions(@Query() status: GetFacilityAdmissionsDto) {
+    return this.admissionsService.facilityAdmissions(status);
   }
-
 
 }
