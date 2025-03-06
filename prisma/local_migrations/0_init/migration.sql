@@ -1,9 +1,3 @@
--- CreateEnum
-CREATE TYPE "AdmissionStatus" AS ENUM ('Admitted', 'Discharged', 'Rejected', 'Processing');
-
--- CreateEnum
-CREATE TYPE "DischargeRequestStatus" AS ENUM ('Pending', 'Approved', 'Rejected');
-
 -- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
@@ -298,7 +292,7 @@ CREATE TABLE "FacilityWallet" (
 -- CreateTable
 CREATE TABLE "WalletTransaction" (
     "id" TEXT NOT NULL,
-    "clinicVisitId" TEXT,
+    "clinicVisitId" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "points" DOUBLE PRECISION NOT NULL,
     "previousPoints" DOUBLE PRECISION NOT NULL DEFAULT 0,
@@ -309,7 +303,6 @@ CREATE TABLE "WalletTransaction" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "facilityId" TEXT NOT NULL,
     "rejected" BOOLEAN NOT NULL DEFAULT false,
-    "dischargeId" TEXT,
 
     CONSTRAINT "WalletTransaction_pkey" PRIMARY KEY ("id")
 );
@@ -358,46 +351,6 @@ CREATE TABLE "EmergencyContact" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "EmergencyContact_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Admission" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "facilityId" TEXT NOT NULL,
-    "admittedById" TEXT NOT NULL,
-    "status" "AdmissionStatus" NOT NULL DEFAULT 'Admitted',
-
-    CONSTRAINT "Admission_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "DischargeRequest" (
-    "id" TEXT NOT NULL,
-    "admissionId" TEXT NOT NULL,
-    "files" TEXT[],
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "userId" TEXT NOT NULL,
-    "status" "DischargeRequestStatus" NOT NULL DEFAULT 'Pending',
-    "processedById" TEXT,
-
-    CONSTRAINT "DischargeRequest_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Discharge" (
-    "id" TEXT NOT NULL,
-    "walletAmount" DOUBLE PRECISION NOT NULL,
-    "settleAmount" DOUBLE PRECISION NOT NULL DEFAULT 0,
-    "dischargeRequestId" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Discharge_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -542,13 +495,10 @@ ALTER TABLE "Wallet" ADD CONSTRAINT "Wallet_userId_fkey" FOREIGN KEY ("userId") 
 ALTER TABLE "FacilityWallet" ADD CONSTRAINT "FacilityWallet_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "WalletTransaction" ADD CONSTRAINT "WalletTransaction_dischargeId_fkey" FOREIGN KEY ("dischargeId") REFERENCES "Discharge"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "WalletTransaction" ADD CONSTRAINT "WalletTransaction_approvedById_fkey" FOREIGN KEY ("approvedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "WalletTransaction" ADD CONSTRAINT "WalletTransaction_clinicVisitId_fkey" FOREIGN KEY ("clinicVisitId") REFERENCES "ClinicVisit"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "WalletTransaction" ADD CONSTRAINT "WalletTransaction_clinicVisitId_fkey" FOREIGN KEY ("clinicVisitId") REFERENCES "ClinicVisit"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "WalletTransaction" ADD CONSTRAINT "WalletTransaction_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -576,28 +526,4 @@ ALTER TABLE "TransactionReversal" ADD CONSTRAINT "TransactionReversal_walletTran
 
 -- AddForeignKey
 ALTER TABLE "EmergencyContact" ADD CONSTRAINT "EmergencyContact_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Admission" ADD CONSTRAINT "Admission_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Admission" ADD CONSTRAINT "Admission_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facility"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Admission" ADD CONSTRAINT "Admission_admittedById_fkey" FOREIGN KEY ("admittedById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "DischargeRequest" ADD CONSTRAINT "DischargeRequest_admissionId_fkey" FOREIGN KEY ("admissionId") REFERENCES "Admission"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "DischargeRequest" ADD CONSTRAINT "DischargeRequest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "DischargeRequest" ADD CONSTRAINT "DischargeRequest_processedById_fkey" FOREIGN KEY ("processedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Discharge" ADD CONSTRAINT "Discharge_dischargeRequestId_fkey" FOREIGN KEY ("dischargeRequestId") REFERENCES "DischargeRequest"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Discharge" ADD CONSTRAINT "Discharge_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 

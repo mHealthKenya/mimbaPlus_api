@@ -22,6 +22,7 @@ import { UsersModule } from './users/users.module';
 import { WalletModule } from './wallet/wallet.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { CommunicationModule } from './communication/communication.module';
 import * as express from 'express';
 
 @Module({
@@ -48,6 +49,7 @@ import * as express from 'express';
     WalletModule,
     AdmissionsModule,
     DischargeModule,
+    CommunicationModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
