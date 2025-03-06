@@ -63,8 +63,8 @@ export class CommunicationService {
 
         } catch (error) {
             console.log(error);
-            const statusCode = error?.response?.status;
-            const status = error?.response?.statusText;
+            const statusCode = error?.response?.status || 500;
+            const status = error?.response?.statusText || 'Failed';
 
             await this.prisma.message.create({
                 data: {
