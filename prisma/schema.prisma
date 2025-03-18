@@ -18,12 +18,12 @@ model User {
   active                 Boolean               @default(true)
   password               String
   role                   String                @default("Unassigned")
-  hasWallet              Boolean               @default(false)
   createdAt              DateTime              @default(now())
   updatedAt              DateTime              @updatedAt
   facilityAdmin          String?
   facilityId             String?
   createdById            String?
+  hasWallet              Boolean               @default(false)
   Appointments           Appointments[]
   BiodatumCreated        BioData[]             @relation("createdBy")
   BioDatumUpdated        BioData[]             @relation("updatedBy")
@@ -49,6 +49,11 @@ model User {
   WalletApproval         WalletTransaction[]   @relation("approvedBy")
   Transaction            WalletTransaction[]   @relation("transactionCreatedBy")
   WalletTransaction      WalletTransaction[]
+  Admission              Admission[]
+  AdmissionOfficer       Admission[]           @relation("AdmissionOfficer")
+  Discharge              Discharge[]
+  DischargeRequest       DischargeRequest[]
+  DischargeProcessed     DischargeRequest[]    @relation("processedBy")
 }
 
 model BioData {
@@ -57,11 +62,10 @@ model BioData {
   height                 Float
   weight                 Float
   active                 Boolean       @default(true)
-  parity                 String
   age                    Float
-  last_monthly_period    DateTime
-  expected_delivery_date DateTime
-  pregnancy_period       Float
+  last_monthly_period    DateTime?
+  expected_delivery_date DateTime?
+  pregnancy_period       Float?
   last_clinic_visit      DateTime
   facilityId             String
   gravidity              Float?        @default(0)
@@ -69,6 +73,7 @@ model BioData {
   updatedById            String
   createdAt              DateTime      @default(now())
   updatedAt              DateTime      @updatedAt
+  parity                 String?
   createdBy              User          @relation("createdBy", fields: [createdById], references: [id])
   facility               Facility      @relation(fields: [facilityId], references: [id])
   updatedBy              User          @relation("updatedBy", fields: [updatedById], references: [id])
@@ -79,10 +84,10 @@ model BioData {
 model Facility {
   id                  String               @id @default(cuid())
   name                String               @unique
-  hasWallet           Boolean              @default(false)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   status              String               @default("Active")
+  hasWallet           Boolean              @default(false)
   Appointments        Appointments[]
   BioData             BioData[]
   BirthPlan           BirthPlan[]
@@ -95,6 +100,7 @@ model Facility {
   Schedule            Schedule[]
   users               User[]
   WalletTransaction   WalletTransaction[]
+  Admission           Admission[]
 }
 
 model Appointments {
@@ -228,9 +234,9 @@ model ClinicVisit {
   notes                String?
   treatment            String?
   date                 DateTime           @default(now())
-  billed               Boolean            @default(false)
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
+  billed               Boolean            @default(false)
   bioData              BioData            @relation(fields: [bioDataId], references: [id])
   facility             Facility           @relation(fields: [facilityId], references: [id])
   WalletCodes          WalletCodes[]
@@ -315,7 +321,8 @@ model FacilityWallet {
 
 model WalletTransaction {
   id                  String                @id @default(cuid())
-  clinicVisitId       String                @unique
+  clinicVisitId       String?               @unique
+  discharge           Discharge?            @relation(fields: [dischargeId], references: [id])
   userId              String
   points              Float
   previousPoints      Float                 @default(0)
@@ -328,10 +335,11 @@ model WalletTransaction {
   rejected            Boolean               @default(false)
   TransactionReversal TransactionReversal[]
   approvedBy          User?                 @relation("approvedBy", fields: [approvedById], references: [id])
-  clinicVisit         ClinicVisit           @relation(fields: [clinicVisitId], references: [id])
+  clinicVisit         ClinicVisit?          @relation(fields: [clinicVisitId], references: [id])
   createdBy           User                  @relation("transactionCreatedBy", fields: [createdById], references: [id])
   facility            Facility              @relation(fields: [facilityId], references: [id])
   user                User                  @relation(fields: [userId], references: [id])
+  dischargeId         String?
 }
 
 model WalletBase {
@@ -374,4 +382,59 @@ model EmergencyContact {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   facility   Facility @relation(fields: [facilityId], references: [id])
+}
+
+model Admission {
+  id               String             @id @default(cuid())
+  user             User               @relation(fields: [userId], references: [id])
+  userId           String
+  facility         Facility           @relation(fields: [facilityId], references: [id])
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  facilityId       String
+  admittedBy       User               @relation("AdmissionOfficer", fields: [admittedById], references: [id])
+  admittedById     String
+  status           AdmissionStatus    @default(Admitted)
+  DischargeRequest DischargeRequest[]
+}
+
+enum AdmissionStatus {
+  Admitted
+  Discharged
+  Rejected
+  Processing
+}
+
+model DischargeRequest {
+  id            String                 @id @default(cuid())
+  admission     Admission              @relation(fields: [admissionId], references: [id])
+  admissionId   String
+  files         String[]
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  Discharge     Discharge[]
+  requestedBy   User                   @relation(fields: [userId], references: [id])
+  userId        String
+  status        DischargeRequestStatus @default(Pending)
+  processedBy   User?                  @relation("processedBy", fields: [processedById], references: [id])
+  processedById String?
+}
+
+model Discharge {
+  id                 String              @id @default(cuid())
+  walletAmount       Float
+  settleAmount       Float               @default(0)
+  request            DischargeRequest    @relation(fields: [dischargeRequestId], references: [id])
+  dischargeRequestId String
+  approvedBy         User                @relation(fields: [userId], references: [id])
+  userId             String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  WalletTransaction  WalletTransaction[]
+}
+
+enum DischargeRequestStatus {
+  Pending
+  Approved
+  Rejected
 }
