@@ -71,6 +71,54 @@ export class SendsmsService {
     }
   }
 
+  async sendSMSMultipleNumbersFn(data: SMSProps[]) {
+    const phoneNumbers = data.map((item) => item.phoneNumber).join(',');
+    const message = data[0]?.message; 
+  
+    const options = {
+      to: phoneNumbers,
+      message,
+      from: '22210',
+    };
+  
+    try {
+      const sent = await this.sms.send(options);
+  
+      const recipients = sent.SMSMessageData.Recipients.map((recipient) => ({
+        status: recipient.status,
+        statusCode: recipient.statusCode,
+        messageId: recipient.messageId,
+        cost: +recipient.cost.split('KES ')[1],
+      }));
+  
+      // Save each recipient's data to the database
+      await Promise.all(
+        recipients.map((val) =>
+          this.prisma.message.create({
+            data: {
+              ...val,
+            },
+          }),
+        ),
+      );
+  
+      return recipients; // Return the recipients' statuses
+    } catch (error) {
+      console.log(error);
+      const statusCode = error?.response?.status;
+      const status = error?.response?.statusText;
+  
+      await this.prisma.message.create({
+        data: {
+          status,
+          statusCode,
+        },
+      });
+  
+      throw new BadRequestException('Failed to send SMS');
+    }
+  }
+
   async findSMS() {
     const val = await this.prisma.message
       .findMany({

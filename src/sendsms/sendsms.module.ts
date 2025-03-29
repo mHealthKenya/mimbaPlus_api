@@ -9,6 +9,7 @@ import { DatePicker } from '../helpers/date-picker';
 @Module({
   controllers: [SendsmsController],
   providers: [PrismaService, UserHelper, SendsmsService, DatePicker],
+  exports: [SendsmsService],
 })
 export class SendsmsModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

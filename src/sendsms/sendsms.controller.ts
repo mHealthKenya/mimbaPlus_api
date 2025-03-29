@@ -56,4 +56,6 @@ export class SendsmsController {
   allSMSCount() {
     return this.smsService.allSMSCount();
   }
+
+  
 }

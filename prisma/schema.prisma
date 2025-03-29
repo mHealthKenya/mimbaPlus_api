@@ -54,6 +54,7 @@ model User {
   Discharge              Discharge[]
   DischargeRequest       DischargeRequest[]
   DischargeProcessed     DischargeRequest[]    @relation("processedBy")
+  totalMessages   Int      @default(0) 
 }
 
 model BioData {
@@ -432,6 +433,16 @@ model Discharge {
   updatedAt          DateTime            @updatedAt
   WalletTransaction  WalletTransaction[]
 }
+
+model MessageTemplates {
+  id        String   @id @default(cuid())
+  title     String? 
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+} 
+
+
 
 enum DischargeRequestStatus {
   Pending
