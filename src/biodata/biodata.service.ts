@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserHelper } from '../helpers/user-helper';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { CreateBiodatumDto } from './dto/create-biodatum.dto';
 import { UpdateBiodatumDto } from './dto/update-biodatum.dto';
 
@@ -54,7 +55,10 @@ export class BiodataService {
           userId: createBiodatumDto.userId,
         },
         update: data,
-        create: data,
+        create: {
+          ...data,
+          userId: createBiodatumDto.userId,
+        } as Prisma.BioDataUncheckedCreateInput,
       });
 
       return newBiodata;
