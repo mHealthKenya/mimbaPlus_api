@@ -1,0 +1,33 @@
+trigger:
+  - walldev
+
+resources:
+  - repo: self
+
+variables:
+  - group: Secrets
+  - name: tag
+    value: $(Build.BuildId)
+
+stages:
+  - stage: BuildAndPushBackend
+    displayName: Build and Push Backend Docker Image
+    jobs:
+      - job: BuildAndPushBackendImage
+        displayName: Build and Push Backend Image
+        pool:
+          vmImage: ubuntu-latest
+        steps:
+          - script: |
+              echo "Building Docker image for backend with tag: $(tag)"
+              docker build --platform linux/amd64 -t devmhk/mplusapidev:$(tag) .
+            displayName: Build Backend Docker Image
+            env:
+              DOCKER_BUILDKIT: 1
+
+          - task: Docker@2
+            inputs:
+              containerRegistry: 'docker'
+              repository: 'joelwekesa/rpmapi'
+              command: 'push'
+              tags: '$(tag)'
