@@ -59,8 +59,8 @@ model User {
 model BioData {
   id                     String        @id @default(cuid())
   userId                 String        @unique
-  height                 Float
-  weight                 Float
+  height                 Float?
+  weight                 Float?
   active                 Boolean       @default(true)
   age                    Float
   last_monthly_period    DateTime?

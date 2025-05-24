@@ -23,7 +23,7 @@ import { GetUserDto } from './dto/get-users.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @UseGuards(RolesGuard)
   // @UserRoles(Roles.CHV, Roles.ADMIN)
@@ -139,5 +139,10 @@ export class UsersController {
   @Get('mothers-registered')
   getMothersRegistered(@Query() data: GetUserDto) {
     return this.usersService.mothersRegistered(data);
+  }
+
+  @Get('age-group')
+  getAgeGroup() {
+    return this.usersService.mothersAgeGroupDistribution();
   }
 }

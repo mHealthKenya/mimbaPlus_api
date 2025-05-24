@@ -51,7 +51,7 @@ export class UsersService {
     private readonly eventEmitter: EventEmitter2,
     private readonly userHelper: UserHelper,
     private readonly smsService: SendsmsService,
-  ) {}
+  ) { }
 
   async createUser(createUser: CreateUserDto) {
     const id = uuidv4();
@@ -711,6 +711,58 @@ export class UsersService {
       mothers,
       count,
     };
+  }
+
+
+  async mothersAgeGroupDistribution() {
+    const age_groups = [
+      {
+        group: '13-19',
+        min: 13,
+        max: 19,
+      },
+
+      {
+        group: '20-30',
+        min: 20,
+        max: 30,
+      },
+
+      {
+        group: '31-40',
+        min: 30,
+        max: 34,
+      },
+
+      {
+        group: '41-50',
+        min: 35,
+        max: 39,
+      },
+    ]
+
+
+    const ageGroupCounts = await Promise.all(
+      age_groups.map(async (group) => {
+        const count = await this.prisma.user.count({
+          where: {
+            role: Roles.MOTHER,
+            BioData: {
+              age: {
+                gte: group.min,
+                lte: group.max,
+              },
+            },
+          },
+        });
+
+        return {
+          name: group.group,
+          value: count,
+        };
+      }),
+    );
+    return ageGroupCounts;
   }
 
   @OnEvent('password.request')
