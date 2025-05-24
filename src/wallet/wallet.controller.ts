@@ -186,4 +186,9 @@ export class WalletController {
     return this.walletService.motherTransactions();
   }
 
+  @Get('balances')
+  getBalances() {
+    return this.walletService.walletsWithBalance();
+  }
+
 }

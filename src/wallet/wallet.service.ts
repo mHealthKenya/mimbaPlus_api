@@ -894,6 +894,44 @@ export class WalletService {
 
   }
 
+  async walletsWithBalance() {
+    const wallets = await this.prisma.wallet.findMany({
+      where: {
+        balance: {
+          gt: 0
+        },
+
+        user: {
+          active: true,
+          hasWallet: true,
+          role: Roles.MOTHER
+        }
+      },
+      include: {
+        user: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true,
+            Facility: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      }
+    }).then(data => data).catch(err => {
+
+      throw new BadRequestException(err)
+    })
+
+    return wallets
+  }
+
 
   @Cron(CronExpression.EVERY_5_MINUTES)
   async createWallets() {
