@@ -4,6 +4,7 @@ import { UpdateClinicvisitDto } from './dto/update-clinicvisit.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { DatePicker } from '../helpers/date-picker';
 import { UserHelper } from '../helpers/user-helper';
+import { Roles } from 'src/users/users.service';
 
 @Injectable()
 export class ClinicvisitService {
@@ -432,4 +433,43 @@ export class ClinicvisitService {
 
     return visits;
   }
+
+  async visitsPerMother() {
+    const allMotherVisits = await this.prismaService.bioData.findMany({
+
+      where: {
+        user: {
+          role: Roles.MOTHER,
+        },
+      },
+      include: {
+        _count: {
+          select: {
+            ClinicVisit: true,
+          }
+        },
+
+        user: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true,
+          }
+        }
+      }
+    })
+
+    const visits = allMotherVisits.map(mother => {
+      return {
+        id: mother.id,
+        fullName: `${mother.user.f_name} ${mother.user.l_name}`,
+        phoneNumber: mother.user.phone_number,
+        visitCount: mother._count.ClinicVisit,
+      }
+    })
+
+    return visits
+  }
+
+
 }

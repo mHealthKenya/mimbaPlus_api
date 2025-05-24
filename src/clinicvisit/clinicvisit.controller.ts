@@ -97,4 +97,10 @@ export class ClinicvisitController {
   unbilledVisits() {
     return this.clinicvisitService.findByFacilityUnbilled();
   }
+
+
+  @Get('visitcount')
+  mothersVisitCount() {
+    return this.clinicvisitService.visitsPerMother();
+  }
 }
