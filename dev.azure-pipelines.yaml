@@ -28,6 +28,6 @@ stages:
           - task: Docker@2
             inputs:
               containerRegistry: 'docker'
-              repository: 'joelwekesa/rpmapi'
+              repository: 'devmhk/mplusapidev'
               command: 'push'
               tags: '$(tag)'
