@@ -6,7 +6,7 @@
   tasks:
     - name: Get latest dev docker image
       uri:
-        url: 'https://hub.docker.com/v2/repositories/devmhk/mplusapidev/tags?page_size=1'
+        url: 'https://hub.docker.com/v2/repositories/devmhk/mplusapi/tags?page_size=1'
         method: GET
         return_content: yes
       register: docker_tags
@@ -19,36 +19,31 @@
       debug:
         msg: 'Latest dev docker tag is {{ dev_tag }}'
 
-    - name: Ensure compose directory exists for dev
+    - name: Ensure compose directory exists for prod
       file:
-        path: /opt/mplus/api/dev
+        path: /opt/mplus/api/prod
         state: directory
 
-    - name: Copy dev compose file
+    - name: Generate .env file
+      template:
+        src: ./env.j2
+        dest: /opt/mplus/api/prod/.env
+        mode: 0744
+
+    - name: Copy prod compose file
       copy:
-        src: ../compose.yaml
-        dest: /opt/mplus/api/dev/docker-compose.yaml
+        src: ./compose.yaml
+        dest: /opt/mplus/api/prod/docker-compose.yaml
 
     - name: Update tag on docker compose file
       replace:
-        path: /opt/mplus/api/dev/docker-compose.yaml
-        regexp: 'devmhk/mplusapidev:latest'
-        replace: 'devmhk/mplusapidev:{{ dev_tag }}'
+        path: /opt/mplus/api/prod/docker-compose.yaml
+        regexp: 'devmhk/mplusapi:latest'
+        replace: 'devmhk/mplusapi:{{ dev_tag }}'
 
-    - name: Ensure dev env file exists
-      file:
-        path: /opt/mplus/api/dev/.env
-        state: touch
-
-    - name: Copy dev env file
-      copy:
-        src: ../.env
-        dest: /opt/mplus/api/dev/.env
-        mode: '0744'
-
-    - name: Get the currently running image tag for dev
+    - name: Get the currently running image tag for prod
       shell: |
-        docker ps --format "{{ '{{.Image}}' }}" | grep '^devmhk/mplusapidev:' | awk -F ':' '{print $2}'
+        docker ps --format "{{ '{{.Image}}' }}" | grep '^devmhk/mplusapi:' | awk -F ':' '{print $2}'
       register: current_tag
       changed_when: false
       ignore_errors: true
@@ -57,26 +52,26 @@
       debug:
         msg: "Current running image tag: {{ current_tag.stdout | default('N/A') }}"
 
-    - name: Stop dev
+    - name: Stop prod
       community.docker.docker_compose_v2:
-        project_src: /opt/mplus/api/dev
+        project_src: /opt/mplus/api/prod
         files:
           - docker-compose.yaml
         state: absent
       ignore_errors: true
 
-    - name: Start dev
+    - name: Start prod
       community.docker.docker_compose_v2:
-        project_src: /opt/mplus/api/dev
+        project_src: /opt/mplus/api/prod
         files:
           - docker-compose.yaml
         state: present
         recreate: always
 
-    - name: Wait for dev to start
+    - name: Wait for prod to start
       wait_for:
         host: localhost
-        port: 4500
+        port: 8000
         delay: 5
         timeout: 60
         state: started
@@ -89,9 +84,9 @@
 
     - name: Rollback to previous version if start fails
       block:
-        - name: Stop failed dev
+        - name: Stop failed prod
           community.docker.docker_compose_v2:
-            project_src: /opt/mplus/api/dev
+            project_src: /opt/mplus/api/prod
             files:
               - docker-compose.yaml
             state: absent
@@ -99,14 +94,14 @@
 
         - name: Restore previous image tag in compose file
           replace:
-            path: /opt/mplus/api/dev/docker-compose.yaml
-            regexp: 'devmhk/mplusapidev:.*'
-            replace: 'devmhk/mplusapidev:{{ current_tag.stdout }}'
+            path: /opt/mplus/api/prod/docker-compose.yaml
+            regexp: 'devmhk/mplusapi:.*'
+            replace: 'devmhk/mplusapi:{{ current_tag.stdout }}'
           when: current_tag.stdout | length > 0
 
-        - name: Restart dev with previous version
+        - name: Restart prod with previous version
           community.docker.docker_compose_v2:
-            project_src: /opt/mplus/api/dev
+            project_src: /opt/mplus/api/prod
             files:
               - docker-compose.yaml
             state: present
