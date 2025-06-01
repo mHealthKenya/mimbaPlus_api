@@ -40,11 +40,11 @@
         path: /opt/mplus/api/dev/.env
         state: touch
 
-    - name: Copy dev env file
-      copy:
-        src: ../.env
+    - name: Generate .env file
+      template:
+        src: ./env_dev.j2
         dest: /opt/mplus/api/dev/.env
-        mode: '0744'
+        mode: 0744
 
     - name: Get the currently running image tag for dev
       shell: |
@@ -60,6 +60,7 @@
     - name: Stop dev
       community.docker.docker_compose_v2:
         project_src: /opt/mplus/api/dev
+        project_name: mplus-api-dev
         files:
           - docker-compose.yaml
         state: absent
@@ -68,6 +69,7 @@
     - name: Start dev
       community.docker.docker_compose_v2:
         project_src: /opt/mplus/api/dev
+        project_name: mplus-api-dev
         files:
           - docker-compose.yaml
         state: present
