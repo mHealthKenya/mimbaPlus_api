@@ -23,7 +23,8 @@ export class BiodataController {
   constructor(private readonly biodataService: BiodataService) {}
 
   @Post('add')
-  @UseGuards(MotherPrivateDataGuard)
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN, Roles.FACILITY)
   create(@Body() createBiodatumDto: CreateBiodatumDto) {
     return this.biodataService.create(createBiodatumDto);
   }
