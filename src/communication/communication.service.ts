@@ -27,7 +27,7 @@ export class CommunicationService {
       message,
       from: '22210',
     };
-    console.log('error', phoneNumbers);
+    console.log('error', validPhoneNumbers);
 
     try {
       const sent = await this.sms.send(options);
@@ -64,7 +64,7 @@ export class CommunicationService {
         };
       }
     } catch (error) {
-      console.log(error);
+      console.log('bulk msg error', error);
       const statusCode = error?.response?.status || 500;
       const status = error?.response?.statusText || 'Failed';
 
