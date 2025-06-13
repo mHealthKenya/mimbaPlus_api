@@ -21,61 +21,121 @@ export class CommunicationService {
     const validPhoneNumbers = phoneNumbers.filter((phoneNumber) =>
       /^\+254\d{9}$/.test(phoneNumber),
     );
-
-    const options = {
-      to: validPhoneNumbers,
-      message,
-      from: '22210',
-    };
-    console.log('error', validPhoneNumbers);
-
-    try {
-      const sent = await this.sms.send(options);
-
-      const costs = sent.SMSMessageData.Recipients.map((recipient) => {
-        return recipient.cost.split('KES ')[1];
-      });
-
-      console.log('costs', costs);
-
-      const vals: Message[] = sent.SMSMessageData.Recipients.map(
-        (recipient, index) => {
-          return {
-            status: recipient.status,
-            statusCode: recipient.statusCode,
-            messageId: recipient.messageId,
-            cost: +costs[index],
-          };
-        },
-      );
-
-      const success = await this.prisma.message
-        .createMany({
-          data: vals,
-        })
-        .then((data) => data)
-        .catch((err) => {
-          console.log('err', err);
-        });
-
-      if (success) {
-        return {
-          message: 'SMS sent successfully',
+    const reponse = await Promise.allSettled(
+      phoneNumbers.map(async (phone) => {
+        const options = {
+          to: [phone],
+          message,
+          from: '22210',
         };
-      }
-    } catch (error) {
-      console.log('bulk msg error', error);
-      const statusCode = error?.response?.status || 500;
-      const status = error?.response?.statusText || 'Failed';
 
-      await this.prisma.message.create({
-        data: {
-          status,
-          statusCode,
-        },
-      });
+        try {
+          const sent = await this.sms.send(options);
 
-      throw new BadRequestException('Failed to send SMS');
-    }
+          const costs = sent.SMSMessageData.Recipients.map((recipient) => {
+            return recipient.cost.split('KES ')[1];
+          });
+
+          console.log('costs', costs);
+
+          const vals: Message[] = sent.SMSMessageData.Recipients.map(
+            (recipient, index) => {
+              return {
+                status: recipient.status,
+                statusCode: recipient.statusCode,
+                messageId: recipient.messageId,
+                cost: +costs[index],
+              };
+            },
+          );
+
+          const success = await this.prisma.message
+            .createMany({
+              data: vals,
+            })
+            .then((data) => data)
+            .catch((err) => {
+              console.log('err', err);
+            });
+
+          if (success) {
+            return {
+              message: 'SMS sent successfully',
+            };
+          }
+        } catch (error) {
+          console.log(error);
+          const statusCode = error?.response?.status || 500;
+          const status = error?.response?.statusText || 'Failed';
+
+          await this.prisma.message.create({
+            data: {
+              status,
+              statusCode,
+            },
+          });
+
+          throw new BadRequestException('Failed to send SMS');
+        }
+      }),
+    );
+
+    return reponse;
+
+    // const options = {
+    //   to: validPhoneNumbers,
+    //   message,
+    //   from: '22210',
+    // };
+    // console.log('error', validPhoneNumbers);
+
+    // try {
+    //   const sent = await this.sms.send(options);
+
+    //   const costs = sent.SMSMessageData.Recipients.map((recipient) => {
+    //     return recipient.cost.split('KES ')[1];
+    //   });
+
+    //   console.log('costs', costs);
+
+    //   const vals: Message[] = sent.SMSMessageData.Recipients.map(
+    //     (recipient, index) => {
+    //       return {
+    //         status: recipient.status,
+    //         statusCode: recipient.statusCode,
+    //         messageId: recipient.messageId,
+    //         cost: +costs[index],
+    //       };
+    //     },
+    //   );
+
+    //   const success = await this.prisma.message
+    //     .createMany({
+    //       data: vals,
+    //     })
+    //     .then((data) => data)
+    //     .catch((err) => {
+    //       console.log('err', err);
+    //     });
+
+    //   if (success) {
+    //     return {
+    //       message: 'SMS sent successfully',
+    //     };
+    //   }
+    // } catch (error) {
+    //   console.log('bulk msg error', error);
+    //   const statusCode = error?.response?.status || 500;
+    //   const status = error?.response?.statusText || 'Failed';
+
+    //   await this.prisma.message.create({
+    //     data: {
+    //       status,
+    //       statusCode,
+    //     },
+    //   });
+
+    //   throw new BadRequestException('Failed to send SMS');
+    // }
   }
 }
