@@ -49,11 +49,12 @@ model User {
   WalletApproval         WalletTransaction[]   @relation("approvedBy")
   Transaction            WalletTransaction[]   @relation("transactionCreatedBy")
   WalletTransaction      WalletTransaction[]
-  Admission              Admission[]
+  Admission              Admission[] 
   AdmissionOfficer       Admission[]           @relation("AdmissionOfficer")
   Discharge              Discharge[]
   DischargeRequest       DischargeRequest[]
   DischargeProcessed     DischargeRequest[]    @relation("processedBy")
+  hasDelivered           Boolean?               @default(false)
 }
 
 model BioData {
