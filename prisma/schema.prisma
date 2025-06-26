@@ -54,7 +54,8 @@ model User {
   Discharge              Discharge[]
   DischargeRequest       DischargeRequest[]
   DischargeProcessed     DischargeRequest[]    @relation("processedBy")
-  hasDelivered           Boolean?               @default(false)
+  hasDelivered           Boolean?              @default(false)
+
 }
 
 model BioData {
