@@ -1,8 +1,9 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
-import { SendsmsService } from './sendsms.service';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { ScheduleSMSDto, SendsmsService, SMSProps } from './sendsms.service';
 import { RolesGuard } from '../guards/roles/roles.guard';
 import { UserRoles } from '../decorators/roles/roles.decorator';
 import { Roles } from '../users/users.service';
+import { Schedule } from '@prisma/client';
 
 @Controller('sms')
 export class SendsmsController {
@@ -55,6 +56,15 @@ export class SendsmsController {
   @Get('count/all')
   allSMSCount() {
     return this.smsService.allSMSCount();
+  }
+
+  @Post('scheduled-messages')
+  sendSMSMultipleNumbersFn(@Body() data: ScheduleSMSDto) {
+    const smsData: SMSProps[] = data.phoneNumbers.map((phoneNumber) => ({
+      phoneNumber,
+      message: data.message,
+    }));
+    return this.smsService.sendSMSMultipleNumbersFn(smsData);
   }
 
   

@@ -12,6 +12,13 @@ export interface SMSProps {
   message: string;
 }
 
+export interface ScheduleSMSDto {
+  phoneNumbers: string[]; 
+  message: string;
+  sendAt: string; 
+}
+
+
 @Injectable()
 export class SendsmsService {
   constructor(
