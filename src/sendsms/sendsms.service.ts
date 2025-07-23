@@ -4,6 +4,8 @@ import * as AfricasTalking from 'africastalking';
 import { PrismaService } from '../prisma/prisma.service';
 import { Message } from './events/message.event';
 import { DatePicker } from '../helpers/date-picker';
+import { User } from '@prisma/client';
+import { Cron } from '@nestjs/schedule';
 
 export interface SMSProps {
   phoneNumber: string;
@@ -239,5 +241,80 @@ export class SendsmsService {
       .then((data) => data);
 
     return stats;
+  }
+
+  async scheduleMessages(users: User[], message: { body: string }, date: Date) {
+    await Promise.all(
+      users.map((user) =>
+        this.prisma.scheduledMessage.create({
+          data: {
+            userId: user.id,
+            message: message.body,
+            scheduledAt: date,
+          },
+        }),
+      ),
+    );
+    console.log(`Scheduled message to ${users.length} users`);
+  }
+
+  // 2. Cron job to send messages every day at 9 AM
+  @Cron('0 9 * * *')
+  async sendPendingScheduledMessages() {
+    const now = new Date();
+
+    const pendingMessages = await this.prisma.scheduledMessage.findMany({
+      where: {
+        scheduledAt: {
+          lte: now,
+        },
+        sent: false,
+      },
+      include: {
+        user: true,
+      },
+    });
+
+    if (pendingMessages.length === 0) {
+      console.log('No scheduled messages to send.');
+      return;
+    }
+
+    // Prepare bulk SMS data
+    const smsData: SMSProps[] = pendingMessages.map((msg) => ({
+      phoneNumber: msg.user.phone_number,
+      message: msg.message,
+    }));
+
+    try {
+      const sentResults = await this.sendSMSMultipleNumbersFn(smsData);
+
+      // Mark messages as sent
+      await Promise.all(
+        pendingMessages.map((msg) =>
+          this.prisma.scheduledMessage.update({
+            where: { id: msg.id },
+            data: { sent: true, updatedAt: new Date() },
+          }),
+        ),
+      );
+
+      console.log(`Successfully sent ${sentResults.length} messages.`);
+    } catch (err) {
+      console.error('Failed to send Scheduled SMS, retrying tomorrow...', err);
+
+      // Increment retry count
+      await Promise.all(
+        pendingMessages.map((msg) =>
+          this.prisma.scheduledMessage.update({
+            where: { id: msg.id },
+            data: {
+              retries: { increment: 1 },
+              updatedAt: new Date(),
+            },
+          }),
+        ),
+      );
+    }
   }
 }
