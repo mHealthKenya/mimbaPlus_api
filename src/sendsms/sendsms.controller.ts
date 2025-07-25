@@ -58,14 +58,7 @@ export class SendsmsController {
     return this.smsService.allSMSCount();
   }
 
-  @Post('scheduled-messages')
-  sendSMSMultipleNumbersFn(@Body() data: ScheduleSMSDto) {
-    const smsData: SMSProps[] = data.phoneNumbers.map((phoneNumber) => ({
-      phoneNumber,
-      message: data.message,
-    }));
-    return this.smsService.sendSMSMultipleNumbersFn(smsData);
-  }
+  
 
   
 }

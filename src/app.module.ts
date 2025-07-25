@@ -24,6 +24,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CommunicationModule } from './communication/communication.module';
 import { MessagesModule } from './messages/messages.module';
+import { ScheduledMessageModule } from './scheduled-message/scheduled-message.module';
 import * as express from 'express';
 
 @Module({
@@ -52,6 +53,7 @@ import * as express from 'express';
     DischargeModule,
     CommunicationModule,
     MessagesModule,
+    ScheduledMessageModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
