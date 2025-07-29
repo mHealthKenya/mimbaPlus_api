@@ -55,7 +55,7 @@ model User {
   DischargeRequest       DischargeRequest[]
   DischargeProcessed     DischargeRequest[]    @relation("processedBy")
   hasDelivered           Boolean?              @default(false)
-
+  ScheduledMessage ScheduledMessage[]
 }
 
 model BioData {
@@ -434,6 +434,19 @@ model Discharge {
   updatedAt          DateTime            @updatedAt
   WalletTransaction  WalletTransaction[]
 }
+
+model ScheduledMessage {
+  id          String   @id @default(cuid())
+  userId      String
+  message     String
+  scheduledAt DateTime
+  sent        Boolean  @default(false)
+  retries     Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
+}
+
 
 enum DischargeRequestStatus {
   Pending

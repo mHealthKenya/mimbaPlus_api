@@ -23,6 +23,7 @@ import { WalletModule } from './wallet/wallet.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CommunicationModule } from './communication/communication.module';
+import { ScheduledMessagesModule } from './scheduled_messages/scheduled_messages.module';
 import * as express from 'express';
 
 @Module({
@@ -50,6 +51,7 @@ import * as express from 'express';
     AdmissionsModule,
     DischargeModule,
     CommunicationModule,
+    ScheduledMessagesModule,
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService],
