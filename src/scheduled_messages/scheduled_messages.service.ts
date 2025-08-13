@@ -133,7 +133,6 @@ export class ScheduledMessagesService {
 
     try {
       const sentResults = await this.sendSms.sendSMSMultipleNumbersFn(smsData);
-      // Mark messages as sent
       await Promise.all(
         pendingMessages.map((msg) =>
           this.prisma.scheduledMessage.update({
@@ -146,14 +145,13 @@ export class ScheduledMessagesService {
       console.log(`Successfully sent ${sentResults.length} messages.`);
     } catch (err) {
       console.error('Failed to send Scheduled SMS, retrying tomorrow...', err);
-
-      // Increment retry count
       await Promise.all(
         pendingMessages.map((msg) =>
           this.prisma.scheduledMessage.update({
             where: { id: msg.id },
             data: {
               retries: { increment: 1 },
+              sent: false,
               updatedAt: new Date(),
             },
           }),
