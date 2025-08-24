@@ -1,39 +1,32 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateScheduledMessageDto } from './dto/create-scheduled_message.dto';
-import { UpdateScheduledMessageDto } from './dto/update-scheduled_message.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { SendsmsService, SMSProps } from 'src/sendsms/sendsms.service';
 import { Cron } from '@nestjs/schedule';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Roles } from 'src/users/users.service';
 
 @Injectable()
 export class ScheduledMessagesService {
   constructor(private prisma: PrismaService, private sendSms: SendsmsService) {}
 
-  async create(createScheduledMessageDto: CreateScheduledMessageDto) {
-  const { userId, message, scheduledAt } = createScheduledMessageDto;
-  
+  async create(dto: CreateScheduledMessageDto) {
+    const { message, category, scheduledAt, gestationTarget, riskCondition } = dto;
 
-  // Create a message for each user in the array
-  const createdMessages = await this.prisma.$transaction(
-    userId.map(userId => 
-      this.prisma.scheduledMessage.create({
-        data: {
-          userId,
-          message,
-          scheduledAt: new Date(scheduledAt),
-        },
-      })
-    )
-  );
-  return createdMessages;
-}
+    const newMessage = await this.prisma.scheduledMessage.create({
+      data: {
+        message,
+        category,
+        scheduledAt: category === 'GENERAL' ? new Date(scheduledAt) : null,
+        gestationTarget: category === 'GESTATION_PERIOD' ? gestationTarget : null,
+        riskCondition: category === 'HIGH_RISK' ? riskCondition : null,
+      },
+    });
 
+    return newMessage;
+  }
 
   async findAllScheduledMessage() {
     const allScheduledMessages = await this.prisma.scheduledMessage.findMany({
-      include: {
-        user: true,
-      },
       orderBy: {
         scheduledAt: 'asc',
       },
@@ -47,9 +40,6 @@ export class ScheduledMessagesService {
   async findScheduledMessageById(id: string) {
     const scheduledMessage = await this.prisma.scheduledMessage.findUnique({
       where: { id },
-      include: {
-        user: true,
-      },
     });
     if(!scheduledMessage){
       throw new NotFoundException('Scheduled message not found');
@@ -60,9 +50,6 @@ export class ScheduledMessagesService {
   async findAllSentMessages() {
     const sentMessages = await this.prisma.scheduledMessage.findMany({
       where: { sent: true },
-      include: {
-        user: true,
-      },
       orderBy: {
         scheduledAt: 'asc',
       },
@@ -76,9 +63,6 @@ export class ScheduledMessagesService {
   async findAllUnSentMessages() {
     const unsentMessages = await this.prisma.scheduledMessage.findMany({
       where: { sent: false },
-      include: {
-        user: true,
-      },
       orderBy: {
         scheduledAt: 'asc',
       },
@@ -89,9 +73,7 @@ export class ScheduledMessagesService {
     return unsentMessages;
   }
 
-
-
-  async removeScheduledMessage(id: string) {
+async removeScheduledMessage(id: string) {
     const scheduledMessage = await this.prisma.scheduledMessage.findUnique({
       where: { id },
     });
@@ -103,21 +85,16 @@ export class ScheduledMessagesService {
     });
   }
 
-  // 2. Cron job to send messages every day at 9 AM
-  @Cron('0 9 * * *')
-  async sendPendingScheduledMessages() {
-    const now = new Date();
+// 2. Cron job to send messages every day at 9 AM
+@Cron('0 9 * * *')
+async sendPendingScheduledMessages() {
+  const now = new Date();
 
+  
+
+  try {
     const pendingMessages = await this.prisma.scheduledMessage.findMany({
-      where: {
-        scheduledAt: {
-          lte: now,
-        },
-        sent: false,
-      },
-      include: {
-        user: true,
-      },
+      where: { sent: false },
     });
 
     if (pendingMessages.length === 0) {
@@ -125,38 +102,127 @@ export class ScheduledMessagesService {
       return;
     }
 
-    // Prepare bulk SMS data
-    const smsData: SMSProps[] = pendingMessages.map((msg) => ({
-      phoneNumber: msg.user.phone_number,
-      message: msg.message,
-    }));
+    for (const msg of pendingMessages) {
+      let usersToNotify: { phone_number: string; id: string }[] = [];
 
-    try {
-      const sentResults = await this.sendSms.sendSMSMultipleNumbersFn(smsData);
-      await Promise.all(
-        pendingMessages.map((msg) =>
-          this.prisma.scheduledMessage.update({
-            where: { id: msg.id },
-            data: { sent: true, updatedAt: new Date() },
-          }),
-        ),
-      );
-
-      console.log(`Successfully sent ${sentResults.length} messages.`);
-    } catch (err) {
-      console.error('Failed to send Scheduled SMS, retrying tomorrow...', err);
-      await Promise.all(
-        pendingMessages.map((msg) =>
-          this.prisma.scheduledMessage.update({
-            where: { id: msg.id },
-            data: {
-              retries: { increment: 1 },
-              sent: false,
-              updatedAt: new Date(),
+      if (msg.category === 'GENERAL') {
+        if (msg.scheduledAt && msg.scheduledAt <= now) {
+          usersToNotify = await this.prisma.user.findMany({
+            where: {
+              active: true,
+              role: Roles.MOTHER,
             },
-          }),
-        ),
-      );
+            select: { phone_number: true, id: true },
+          });
+        }
+      }
+
+      if (msg.category === 'GESTATION_PERIOD') {
+        usersToNotify = await this.getUsersByGestationTarget(msg.gestationTarget);
+      }
+
+      // if (msg.category === 'HIGH_RISK') {
+      //   usersToNotify = await this.getUsersByRiskCondition(msg.riskCondition);
+      // }
+
+      // If there are users to notify, send SMS
+      if (usersToNotify.length > 0) {
+        const smsData: SMSProps[] = usersToNotify.map((user) => ({
+          phoneNumber: user.phone_number,
+          message: msg.message,
+        }));
+
+        try {
+          await this.sendSms.sendSMSMultipleNumbersFn(smsData);
+
+          // Mark this message as sent
+          await this.prisma.scheduledMessage.update({
+            where: { id: msg.id },
+            data: { sent: true },
+          });
+
+          console.log(`✅ Sent message "${msg.message}" to ${usersToNotify.length} mothers`);
+        } catch (smsError) {
+          console.error(`❌ Failed to send message "${msg.message}"`, smsError);
+        }
+      } else {
+        console.log(`No matching mothers for message "${msg.message}"`);
+      }
     }
+  } catch (error) {
+    console.error('❌ Error running cron job:', error);
   }
 }
+
+private async getUsersByGestationTarget(targetWeeks: number) {
+  const targetDate = new Date();
+  targetDate.setDate(targetDate.getDate() - (targetWeeks * 7));
+  
+  const bioDataWithUsers = await this.prisma.bioData.findMany({
+    where: {
+      last_monthly_period: {
+        lte: targetDate
+      },
+      user: {
+        active: true,
+        role: Roles.MOTHER
+      }
+    },
+    include: {
+      user: {
+        select: {
+          phone_number: true,
+          id: true
+        }
+      }
+    }
+  });
+
+  return bioDataWithUsers
+    .filter(bio => bio.user !== null)
+    .map(bio => ({
+      phone_number: bio.user.phone_number,
+      id: bio.user.id
+    }));
+}
+
+// private async getUsersByRiskCondition(condition: string) {
+//   let ageFilter: any = {};
+//   let gravidityFilter: any = {};
+
+//   if (condition === 'AGE_35_PLUS') {
+//     ageFilter = { gte: 35 };
+//   } else if (condition === 'MULTIPLE_PREGNANCY') {
+//     gravidityFilter = { gt: 1 };
+//   }
+
+//   const bioDataWithUsers = await this.prisma.bioData.findMany({
+//     where: {
+//       age: ageFilter,
+//       gravidity: gravidityFilter,
+//       user: {
+//         active: true,
+//         role: Roles.MOTHER
+//       }
+//     },
+//     include: {
+//       user: {
+//         select: {
+//           phone_number: true,
+//           id: true
+//         }
+//       }
+//     }
+//   });
+
+//   return bioDataWithUsers
+//     .filter(bio => bio.user !== null)
+//     .map(bio => ({
+//       phone_number: bio.user.phone_number,
+//       id: bio.user.id
+//     }));
+// }
+
+
+}
+

@@ -435,16 +435,25 @@ model Discharge {
   WalletTransaction  WalletTransaction[]
 }
 
-model ScheduledMessage {
-  id          String   @id @default(cuid())
-  userId      String
-  message     String
-  scheduledAt DateTime
-  sent        Boolean  @default(false)
-  retries     Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  user        User     @relation(fields: [userId], references: [id])
+model ScheduledMessage { 
+  id String @id @default(cuid()) 
+  message String 
+  category MessageCategory @default(GENERAL)
+  scheduledAt DateTime? 
+  gestationTarget Float? 
+  riskCondition String? 
+  sent Boolean @default(false) 
+  retries Int @default(0) 
+  userId String?
+  user   User? @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now()) 
+  updatedAt DateTime @updatedAt 
+  } 
+  
+enum MessageCategory { 
+  GENERAL 
+  GESTATION_PERIOD 
+  HIGH_RISK 
 }
 
 
