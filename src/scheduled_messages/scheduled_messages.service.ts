@@ -32,7 +32,10 @@ export class ScheduledMessagesService {
       },
     });
     if (!allScheduledMessages || allScheduledMessages.length === 0) {
-      throw new NotFoundException('No scheduled messages found');
+      return {
+        message: 'No scheduled messages found',
+        data: [],
+      }
     }
     return allScheduledMessages;
   }
@@ -42,7 +45,10 @@ export class ScheduledMessagesService {
       where: { id },
     });
     if(!scheduledMessage){
-      throw new NotFoundException('Scheduled message not found');
+      return {
+        message: 'Scheduled message not found',
+        data: null,
+      }
     }
     return scheduledMessage;
   }
@@ -55,7 +61,10 @@ export class ScheduledMessagesService {
       },
     });
     if (!sentMessages || sentMessages.length === 0) {
-      throw new NotFoundException('No sent messages found');
+      return {
+        message: 'No sent messages found',
+        data: [],
+      }
     }
     return sentMessages;
   }
@@ -68,7 +77,10 @@ export class ScheduledMessagesService {
       },
     });
     if (!unsentMessages || unsentMessages.length === 0) {
-      throw new NotFoundException('No unsent messages found');
+      return {
+        message: 'No unsent messages found',
+        data: [],
+      }
     }
     return unsentMessages;
   }
