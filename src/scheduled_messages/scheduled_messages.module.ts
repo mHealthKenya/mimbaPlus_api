@@ -1,3 +1,4 @@
+
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ScheduledMessagesService } from './scheduled_messages.service';
 import { ScheduledMessagesController } from './scheduled_messages.controller';
@@ -14,6 +15,6 @@ import { AuthMiddleware } from 'src/middleware/auth/auth.middleware';
 })
 export class ScheduledMessagesModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes(SendsmsController);
+    consumer.apply(AuthMiddleware).forRoutes(ScheduledMessagesController);
   }
 }

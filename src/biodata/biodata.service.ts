@@ -184,4 +184,14 @@ export class BiodataService {
 
     return bio;
   }
+
+  async allBioData() {
+    const bio = await this.prisma.bioData.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return bio;
+  }
 }
