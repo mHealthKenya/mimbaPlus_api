@@ -50,8 +50,9 @@
             update_cache: true
 
         - name: Install Docker Module for Python
-          pip:
-            name: docker
+          apt:
+            name: python3-docker
+            state: present
 
         - name: Ensure docker group exists
           ansible.builtin.group:
