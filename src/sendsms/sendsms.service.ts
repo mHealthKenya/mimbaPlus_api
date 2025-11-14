@@ -22,30 +22,35 @@ export class SendsmsService {
     username: process.env.AT_USERNAME,
   };
 
-  AT = new AfricasTalking(this.credentials);
+  // Initialize Africa's Talking with proper authentication
+  AT = new AfricasTalking({
+    apiKey: this.credentials.apiKey,
+    username: this.credentials.username,
+    format: 'json',
+  });
 
   sms = this.AT.SMS;
 
   async sendSMSMultipleNumbersFn(data: SMSProps[]) {
-    const phoneNumbers = data.map((item) => item.phoneNumber).join(',');
-    const message = data[0]?.message; 
-  
+    const phoneNumbers = data.map((item) => item.phoneNumber);
+    const message = data[0]?.message;
+
     const options = {
       to: phoneNumbers,
       message,
       from: '22210',
     };
-  
+
     try {
       const sent = await this.sms.send(options);
-  
+
       const recipients = sent.SMSMessageData.Recipients.map((recipient) => ({
         status: recipient.status,
         statusCode: recipient.statusCode,
         messageId: recipient.messageId,
         cost: +recipient.cost.split('KES ')[1],
       }));
-  
+
       // Save each recipient's data to the database
       await Promise.all(
         recipients.map((val) =>
@@ -56,20 +61,20 @@ export class SendsmsService {
           }),
         ),
       );
-  
+
       return recipients; // Return the recipients' statuses
     } catch (error) {
       console.log(error);
       const statusCode = error?.response?.status;
       const status = error?.response?.statusText;
-  
+
       await this.prisma.message.create({
         data: {
           status,
           statusCode,
         },
       });
-  
+
       throw new BadRequestException('Failed to send SMS');
     }
   }
@@ -220,6 +225,58 @@ export class SendsmsService {
       });
 
     return totalCost;
+  }
+
+  async yearlymonthlySMS() {
+    const currentYear = new Date().getFullYear();
+    const startYear = 2023; // Starting year
+    const years = Array.from(
+      { length: currentYear - startYear + 1 },
+      (_, i) => startYear + i,
+    );
+    const months = Array.from({ length: 12 }, (_, i) => i); // 0-11 for Jan-Dec
+
+    const results = [];
+
+    for (const year of years) {
+      const yearlyData = {
+        year,
+        months: await Promise.all(
+          months.map(async (month) => {
+            // For the current year, don't count future months
+            if (year === currentYear && month > new Date().getMonth()) {
+              return {
+                month: new Date(year, month, 1).toLocaleString('default', {
+                  month: 'long',
+                }),
+                count: 0,
+              };
+            }
+
+            const startDate = new Date(year, month, 1);
+            const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+            const count = await this.prisma.message.count({
+              where: {
+                status: 'Success',
+                createdAt: {
+                  gte: startDate,
+                  lte: endDate,
+                },
+              },
+            });
+
+            return {
+              month: startDate.toLocaleString('default', { month: 'long' }),
+              count,
+            };
+          }),
+        ),
+      };
+      results.push(yearlyData);
+    }
+
+    return results;
   }
 
   async monthlyStats() {
