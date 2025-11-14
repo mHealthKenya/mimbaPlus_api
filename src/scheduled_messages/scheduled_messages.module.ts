@@ -15,6 +15,6 @@ import { AuthMiddleware } from 'src/middleware/auth/auth.middleware';
 })
 export class ScheduledMessagesModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AuthMiddleware).forRoutes(SendsmsController);
+    consumer.apply(AuthMiddleware).forRoutes(ScheduledMessagesController);
   }
 }
