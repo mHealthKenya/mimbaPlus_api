@@ -52,4 +52,11 @@ export class BiodataController {
   getBioDataByFacility(@Query() facility: FindByFacilityDto) {
     return this.biodataService.bioDataByFacility(facility.facilityId);
   }
+
+  @Get('all')
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  allBioData() {
+    return this.biodataService.allBioData();
+  }
 }

@@ -56,4 +56,11 @@ export class SendsmsController {
   allSMSCount() {
     return this.smsService.allSMSCount();
   }
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('count/yearly-monthly')
+  async getYearlyMonthlySMS() {
+    return this.smsService.yearlymonthlySMS();
+  }
 }
