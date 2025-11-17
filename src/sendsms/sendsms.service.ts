@@ -75,7 +75,7 @@ export class SendsmsService {
         },
       });
 
-      throw new BadRequestException('Failed to send SMS');
+      throw new BadRequestException('Failed to send SMS(s)');
     }
   }
 
