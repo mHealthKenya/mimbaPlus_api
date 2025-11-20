@@ -83,4 +83,4 @@ EXPOSE 8000
 RUN rm -f .env
 
 # Run the application.
-CMD ["node", "dist/main.js"]
+CMD ["node", "dist/src/main.js"]
