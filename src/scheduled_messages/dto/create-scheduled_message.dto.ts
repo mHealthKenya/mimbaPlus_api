@@ -8,7 +8,7 @@ export class CreateScheduledMessageDto {
   @IsEnum(MessageCategory)
   category: MessageCategory;
 
-  @ValidateIf(o => o.category === MessageCategory.GENERAL)
+  @ValidateIf(o => [MessageCategory.GENERAL, MessageCategory.DELIVERED_MOTHERS].includes(o.category))
   @IsDateString()
   scheduledAt?: string;
 

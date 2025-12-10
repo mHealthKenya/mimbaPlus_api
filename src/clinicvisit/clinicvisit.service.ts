@@ -14,6 +14,19 @@ export class ClinicvisitService {
     private readonly userHelper: UserHelper,
   ) { }
   async create(createClinicvisitDto: CreateClinicvisitDto) {
+    const bioData = await this.prismaService.bioData.findUnique({
+      where: {
+        id: createClinicvisitDto.bioDataId,
+      },
+    });
+
+    if (!bioData) {
+      throw new BadRequestException('BioData not found');
+    }
+
+    const motherId = bioData.userId;
+
+
     const newVisit = await this.prismaService.clinicVisit
       .create({
         data: {
@@ -25,6 +38,23 @@ export class ClinicvisitService {
       .catch((err) => {
         throw new BadRequestException(err);
       });
+
+    await this.prismaService.visitCounter.upsert({
+      where: {
+        userId: motherId,
+      },
+      update: {
+        count: {
+          increment: 1,
+        },
+      },
+      create: {
+        userId: motherId,
+        count: 1,
+      },
+    });
+
+   
 
     return newVisit;
   }

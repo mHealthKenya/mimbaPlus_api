@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "MessageCategory" ADD VALUE IF NOT EXISTS 'DELIVERED_MOTHERS';
+

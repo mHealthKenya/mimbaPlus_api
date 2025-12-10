@@ -1,5 +1,5 @@
 services:
-  api:
+  mplus-api-prod:
     image: 'devmhk/mplusapidev:latest'
 
     container_name: mplus-api-dev

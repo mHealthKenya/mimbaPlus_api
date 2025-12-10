@@ -56,6 +56,7 @@ model User {
   DischargeProcessed     DischargeRequest[]    @relation("processedBy")
   hasDelivered           Boolean?              @default(false)
   ScheduledMessage ScheduledMessage[]
+  VisitCounters VisitCounter[]
 }
 
 model BioData {
@@ -240,6 +241,7 @@ model ClinicVisit {
   updatedAt            DateTime           @updatedAt
   billed               Boolean            @default(false)
   bioData              BioData            @relation(fields: [bioDataId], references: [id])
+  
   facility             Facility           @relation(fields: [facilityId], references: [id])
   WalletCodes          WalletCodes[]
   WalletTransaction    WalletTransaction?
@@ -449,11 +451,22 @@ model ScheduledMessage {
   createdAt DateTime @default(now()) 
   updatedAt DateTime @updatedAt 
   } 
+
+model VisitCounter {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
   
 enum MessageCategory { 
   GENERAL 
   GESTATION_PERIOD 
   HIGH_RISK 
+  DELIVERED_MOTHERS
 }
 
 
