@@ -18,12 +18,15 @@ model User {
   active                 Boolean               @default(true)
   password               String
   role                   String                @default("Unassigned")
+  hasWallet              Boolean               @default(false)
   createdAt              DateTime              @default(now())
   updatedAt              DateTime              @updatedAt
   facilityAdmin          String?
   facilityId             String?
   createdById            String?
-  hasWallet              Boolean               @default(false)
+  hasDelivered           Boolean?              @default(false)
+  AdmissionOfficer       Admission[]           @relation("AdmissionOfficer")
+  Admission              Admission[]
   Appointments           Appointments[]
   BiodatumCreated        BioData[]             @relation("createdBy")
   BioDatumUpdated        BioData[]             @relation("updatedBy")
@@ -31,6 +34,9 @@ model User {
   BirthPlan              BirthPlan?
   CHVTargets             CHVTargets?
   ConsentForm            ConsentForm?
+  Discharge              Discharge[]
+  DischargeProcessed     DischargeRequest[]    @relation("processedBy")
+  DischargeRequest       DischargeRequest[]
   RepliedBy              Enquiries[]           @relation("repliedBy")
   Enquiries              Enquiries[]
   FollowUp               FollowUp[]
@@ -41,6 +47,7 @@ model User {
   CreatedBy              Schedule[]            @relation("createdBy")
   Schedule               Schedule[]            @relation("mother")
   UpdateBy               Schedule[]            @relation("updatedBy")
+  ScheduledMessage       ScheduledMessage[]
   TransactionReversal    TransactionReversal[]
   Facility               Facility?             @relation(fields: [facilityId], references: [id])
   Wallet                 Wallet?
@@ -49,13 +56,6 @@ model User {
   WalletApproval         WalletTransaction[]   @relation("approvedBy")
   Transaction            WalletTransaction[]   @relation("transactionCreatedBy")
   WalletTransaction      WalletTransaction[]
-  Admission              Admission[] 
-  AdmissionOfficer       Admission[]           @relation("AdmissionOfficer")
-  Discharge              Discharge[]
-  DischargeRequest       DischargeRequest[]
-  DischargeProcessed     DischargeRequest[]    @relation("processedBy")
-  hasDelivered           Boolean?              @default(false)
-  ScheduledMessage ScheduledMessage[]
 }
 
 model BioData {
@@ -64,6 +64,10 @@ model BioData {
   height                 Float?
   weight                 Float?
   active                 Boolean       @default(true)
+  parity                 String?
+  delivered              Boolean       @default(false)
+  deliveryMethod         String?
+  comments               String[]
   age                    Float
   last_monthly_period    DateTime?
   expected_delivery_date DateTime?
@@ -75,7 +79,6 @@ model BioData {
   updatedById            String
   createdAt              DateTime      @default(now())
   updatedAt              DateTime      @updatedAt
-  parity                 String?
   createdBy              User          @relation("createdBy", fields: [createdById], references: [id])
   facility               Facility      @relation(fields: [facilityId], references: [id])
   updatedBy              User          @relation("updatedBy", fields: [updatedById], references: [id])
@@ -86,10 +89,11 @@ model BioData {
 model Facility {
   id                  String               @id @default(cuid())
   name                String               @unique
+  hasWallet           Boolean              @default(false)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   status              String               @default("Active")
-  hasWallet           Boolean              @default(false)
+  Admission           Admission[]
   Appointments        Appointments[]
   BioData             BioData[]
   BirthPlan           BirthPlan[]
@@ -102,7 +106,6 @@ model Facility {
   Schedule            Schedule[]
   users               User[]
   WalletTransaction   WalletTransaction[]
-  Admission           Admission[]
 }
 
 model Appointments {
@@ -236,9 +239,9 @@ model ClinicVisit {
   notes                String?
   treatment            String?
   date                 DateTime           @default(now())
+  billed               Boolean            @default(false)
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
-  billed               Boolean            @default(false)
   bioData              BioData            @relation(fields: [bioDataId], references: [id])
   facility             Facility           @relation(fields: [facilityId], references: [id])
   WalletCodes          WalletCodes[]
@@ -324,7 +327,6 @@ model FacilityWallet {
 model WalletTransaction {
   id                  String                @id @default(cuid())
   clinicVisitId       String?               @unique
-  discharge           Discharge?            @relation(fields: [dischargeId], references: [id])
   userId              String
   points              Float
   previousPoints      Float                 @default(0)
@@ -335,13 +337,14 @@ model WalletTransaction {
   updatedAt           DateTime              @updatedAt
   facilityId          String
   rejected            Boolean               @default(false)
+  dischargeId         String?
   TransactionReversal TransactionReversal[]
   approvedBy          User?                 @relation("approvedBy", fields: [approvedById], references: [id])
   clinicVisit         ClinicVisit?          @relation(fields: [clinicVisitId], references: [id])
   createdBy           User                  @relation("transactionCreatedBy", fields: [createdById], references: [id])
+  discharge           Discharge?            @relation(fields: [dischargeId], references: [id])
   facility            Facility              @relation(fields: [facilityId], references: [id])
   user                User                  @relation(fields: [userId], references: [id])
-  dischargeId         String?
 }
 
 model WalletBase {
@@ -388,16 +391,59 @@ model EmergencyContact {
 
 model Admission {
   id               String             @id @default(cuid())
-  user             User               @relation(fields: [userId], references: [id])
   userId           String
-  facility         Facility           @relation(fields: [facilityId], references: [id])
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
   facilityId       String
-  admittedBy       User               @relation("AdmissionOfficer", fields: [admittedById], references: [id])
   admittedById     String
   status           AdmissionStatus    @default(Admitted)
+  admittedBy       User               @relation("AdmissionOfficer", fields: [admittedById], references: [id])
+  facility         Facility           @relation(fields: [facilityId], references: [id])
+  user             User               @relation(fields: [userId], references: [id])
   DischargeRequest DischargeRequest[]
+}
+
+model DischargeRequest {
+  id            String                 @id @default(cuid())
+  admissionId   String
+  files         String[]
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  userId        String
+  status        DischargeRequestStatus @default(Pending)
+  processedById String?
+  Discharge     Discharge[]
+  admission     Admission              @relation(fields: [admissionId], references: [id])
+  processedBy   User?                  @relation("processedBy", fields: [processedById], references: [id])
+  requestedBy   User                   @relation(fields: [userId], references: [id])
+}
+
+model Discharge {
+  id                 String              @id @default(cuid())
+  walletAmount       Float
+  settleAmount       Float               @default(0)
+  dischargeRequestId String
+  userId             String
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  request            DischargeRequest    @relation(fields: [dischargeRequestId], references: [id])
+  approvedBy         User                @relation(fields: [userId], references: [id])
+  WalletTransaction  WalletTransaction[]
+}
+
+model ScheduledMessage {
+  id              String          @id @default(cuid())
+  userId          String?
+  message         String
+  scheduledAt     DateTime?
+  sent            Boolean         @default(false)
+  retries         Int             @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  category        MessageCategory @default(GENERAL)
+  gestationTarget Float?
+  riskCondition   String?
+  user            User?           @relation(fields: [userId], references: [id])
 }
 
 enum AdmissionStatus {
@@ -407,55 +453,11 @@ enum AdmissionStatus {
   Processing
 }
 
-model DischargeRequest {
-  id            String                 @id @default(cuid())
-  admission     Admission              @relation(fields: [admissionId], references: [id])
-  admissionId   String
-  files         String[]
-  createdAt     DateTime               @default(now())
-  updatedAt     DateTime               @updatedAt
-  Discharge     Discharge[]
-  requestedBy   User                   @relation(fields: [userId], references: [id])
-  userId        String
-  status        DischargeRequestStatus @default(Pending)
-  processedBy   User?                  @relation("processedBy", fields: [processedById], references: [id])
-  processedById String?
+enum MessageCategory {
+  GENERAL
+  GESTATION_PERIOD
+  HIGH_RISK
 }
-
-model Discharge {
-  id                 String              @id @default(cuid())
-  walletAmount       Float
-  settleAmount       Float               @default(0)
-  request            DischargeRequest    @relation(fields: [dischargeRequestId], references: [id])
-  dischargeRequestId String
-  approvedBy         User                @relation(fields: [userId], references: [id])
-  userId             String
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  WalletTransaction  WalletTransaction[]
-}
-
-model ScheduledMessage { 
-  id String @id @default(cuid()) 
-  message String 
-  category MessageCategory @default(GENERAL)
-  scheduledAt DateTime? 
-  gestationTarget Float? 
-  riskCondition String? 
-  sent Boolean @default(false) 
-  retries Int @default(0) 
-  userId String?
-  user   User? @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now()) 
-  updatedAt DateTime @updatedAt 
-  } 
-  
-enum MessageCategory { 
-  GENERAL 
-  GESTATION_PERIOD 
-  HIGH_RISK 
-}
-
 
 enum DischargeRequestStatus {
   Pending

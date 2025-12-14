@@ -82,8 +82,8 @@ export class UsersController {
     return this.usersService.resetPassword(data);
   }
 
-  @UseGuards(RolesGuard)
-  @UserRoles(Roles.CHV)
+  // @UseGuards(RolesGuard)
+  // @UserRoles(Roles.CHV)
   @Get('chvmothers')
   findCHVMothers() {
     return this.usersService.findCHVMothers();

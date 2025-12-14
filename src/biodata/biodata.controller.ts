@@ -17,10 +17,11 @@ import { GetByIdDto } from './dto/get-by-id.dto';
 import { RolesGuard } from 'src/guards/roles/roles.guard';
 import { UserRoles } from 'src/decorators/roles/roles.decorator';
 import { Roles } from 'src/users/users.service';
+import { AddDeliveryDto } from './dto/add-delivery.dto';
 
 @Controller('biodata')
 export class BiodataController {
-  constructor(private readonly biodataService: BiodataService) {}
+  constructor(private readonly biodataService: BiodataService) { }
 
   @Post('add')
   @UseGuards(RolesGuard)
@@ -31,7 +32,7 @@ export class BiodataController {
 
   @Get('byid')
   @UseGuards(RolesGuard)
-  @UserRoles(Roles.FACILITY)
+  @UserRoles(Roles.FACILITY, Roles.CHV)
   getById(@Query() data: GetByIdDto) {
     return this.biodataService.getById(data.id);
   }
@@ -59,4 +60,11 @@ export class BiodataController {
   allBioData() {
     return this.biodataService.allBioData();
   }
+
+  @Patch('delivery')
+  addDelivery(@Body() data: AddDeliveryDto) {
+    return this.biodataService.addDelivery(data)
+  }
+
+
 }

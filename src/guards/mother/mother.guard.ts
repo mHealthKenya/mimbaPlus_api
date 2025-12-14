@@ -8,7 +8,7 @@ export class MotherPrivateDataGuard implements CanActivate {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userHelper: UserHelper,
-  ) {}
+  ) { }
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const editorId = this.userHelper.getUser().id;
@@ -20,6 +20,8 @@ export class MotherPrivateDataGuard implements CanActivate {
             id: editorId,
           },
         });
+
+
 
         const motherD = this.prisma.user.findUnique({
           where: {
@@ -36,14 +38,25 @@ export class MotherPrivateDataGuard implements CanActivate {
           return false;
         }
 
+        const allowedRoles = [
+          Roles.CHV, Roles.FACILITY
+        ]
+
         if (
-          facilityAdminDetails.role !== Roles.FACILITY ||
+          !allowedRoles.includes(facilityAdminDetails.role as Roles) ||
           !facilityAdminDetails.facilityId
         ) {
+          console.log("here")
           return false;
         }
 
-        return facilityAdminDetails.facilityId === motherDetails.facilityId;
+        console.log({
+          owner: facilityAdminDetails.id,
+          createdBy: motherDetails.createdById,
+          editorId
+        })
+
+        return facilityAdminDetails.facilityId === motherDetails.facilityId || facilityAdminDetails.id === motherDetails.createdById
 
       case 'POST':
       case 'PATCH':

@@ -4,13 +4,15 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { CreateBiodatumDto } from './dto/create-biodatum.dto';
 import { UpdateBiodatumDto } from './dto/update-biodatum.dto';
+import { AddDeliveryDto } from './dto/add-delivery.dto';
+import { Roles } from 'src/users/users.service';
 
 @Injectable()
 export class BiodataService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userHelper: UserHelper,
-  ) {}
+  ) { }
   async create({
     height,
     expected_delivery_date,
@@ -194,4 +196,26 @@ export class BiodataService {
 
     return bio;
   }
+
+  async addDelivery({ id, comments, ...rest }: AddDeliveryDto) {
+    const bioData = await this.prisma.bioData.update({
+      where: {
+        id
+      },
+
+      data: {
+        ...rest,
+        comments: {
+          push: comments
+        }
+      }
+    }).then(data => data).catch(err => {
+      throw new BadRequestException(err)
+    })
+
+
+    return bioData
+  }
+
+
 }
