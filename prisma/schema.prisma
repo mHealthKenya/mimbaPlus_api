@@ -434,18 +434,19 @@ model Discharge {
 }
 
 model ScheduledMessage {
-  id              String          @id @default(cuid())
-  userId          String?
-  message         String
-  scheduledAt     DateTime?
-  sent            Boolean         @default(false)
-  retries         Int             @default(0)
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
-  category        MessageCategory @default(GENERAL)
-  gestationTarget Float?
-  riskCondition   String?
-  user            User?           @relation(fields: [userId], references: [id])
+  id                 String          @id @default(cuid())
+  userId             String?
+  message            String
+  scheduledAt        DateTime?
+  sent               Boolean         @default(false)
+  retries            Int             @default(0)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  category           MessageCategory @default(GENERAL)
+  gestationTarget     Float?
+  riskCondition       String?
+  monthsSinceDelivery Float?
+  user               User?           @relation(fields: [userId], references: [id])
 }
 
 enum AdmissionStatus {
@@ -459,6 +460,7 @@ enum MessageCategory {
   GENERAL
   GESTATION_PERIOD
   HIGH_RISK
+  DELIVERED_MOTHERS
 }
 
 enum DischargeRequestStatus {

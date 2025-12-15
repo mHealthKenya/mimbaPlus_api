@@ -4,21 +4,33 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { SendsmsService, SMSProps } from 'src/sendsms/sendsms.service';
 import { Cron } from '@nestjs/schedule';
 import { Roles } from 'src/users/users.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ScheduledMessagesService {
   constructor(private prisma: PrismaService, private sendSms: SendsmsService) {}
 
   async create(dto: CreateScheduledMessageDto) {
-    const { message, category, scheduledAt, gestationTarget, riskCondition } = dto;
+    const { message, category, scheduledAt, gestationTarget, riskCondition, monthsSinceDelivery } = dto;
+
+    const shouldSetScheduleDate = category === 'GENERAL' || category === 'DELIVERED_MOTHERS' || category === 'HIGH_RISK';
+
+    let scheduledDate: Date | null = null;
+    if (shouldSetScheduleDate && scheduledAt) {
+      const date = new Date(scheduledAt);
+      // Set time to start of day (00:00:00) for date-only input
+      date.setHours(0, 0, 0, 0);
+      scheduledDate = date;
+    }
 
     const newMessage = await this.prisma.scheduledMessage.create({
       data: {
         message,
         category,
-        scheduledAt: category === 'GENERAL' ? new Date(scheduledAt) : null,
+        scheduledAt: scheduledDate,
         gestationTarget: category === 'GESTATION_PERIOD' ? gestationTarget : null,
         riskCondition: category === 'HIGH_RISK' ? riskCondition : null,
+        monthsSinceDelivery: category === 'DELIVERED_MOTHERS' ? monthsSinceDelivery : null,
       },
     });
 
@@ -101,8 +113,8 @@ async removeScheduledMessage(id: string) {
 @Cron('0 9 * * *')
 async sendPendingScheduledMessages() {
   const now = new Date();
-
-  
+  // Set to start of day for date comparison
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   try {
     const pendingMessages = await this.prisma.scheduledMessage.findMany({
@@ -117,8 +129,15 @@ async sendPendingScheduledMessages() {
     for (const msg of pendingMessages) {
       let usersToNotify: { phone_number: string; id: string }[] = [];
 
+      // Helper function to check if scheduled date has arrived (date-only comparison)
+      const isScheduledDateReached = (scheduledAt: Date | null): boolean => {
+        if (!scheduledAt) return false;
+        const scheduledDate = new Date(scheduledAt.getFullYear(), scheduledAt.getMonth(), scheduledAt.getDate());
+        return scheduledDate <= today;
+      };
+
       if (msg.category === 'GENERAL') {
-        if (msg.scheduledAt && msg.scheduledAt <= now) {
+        if (isScheduledDateReached(msg.scheduledAt)) {
           usersToNotify = await this.prisma.user.findMany({
             where: {
               active: true,
@@ -127,15 +146,17 @@ async sendPendingScheduledMessages() {
             select: { phone_number: true, id: true },
           });
         }
-      }
-
-      if (msg.category === 'GESTATION_PERIOD') {
+      } else if (msg.category === 'DELIVERED_MOTHERS') {
+        if (isScheduledDateReached(msg.scheduledAt)) {
+          usersToNotify = await this.getDeliveredMothers(msg.monthsSinceDelivery);
+        }
+      } else if (msg.category === 'GESTATION_PERIOD') {
         usersToNotify = await this.getUsersByGestationTarget(msg.gestationTarget);
+      } else if (msg.category === 'HIGH_RISK') {
+        if (isScheduledDateReached(msg.scheduledAt)) {
+          usersToNotify = await this.getUsersByRiskCondition(msg.riskCondition);
+        }
       }
-
-      // if (msg.category === 'HIGH_RISK') {
-      //   usersToNotify = await this.getUsersByRiskCondition(msg.riskCondition);
-      // }
 
       // If there are users to notify, send SMS
       if (usersToNotify.length > 0) {
@@ -198,43 +219,287 @@ private async getUsersByGestationTarget(targetWeeks: number) {
     }));
 }
 
-// private async getUsersByRiskCondition(condition: string) {
-//   let ageFilter: any = {};
-//   let gravidityFilter: any = {};
+private async getDeliveredMothers(monthsSinceDelivery?: number | null) {
+  // If no months filter, return all delivered mothers
+  if (monthsSinceDelivery === null || monthsSinceDelivery === undefined) {
+    return this.prisma.user.findMany({
+      where: {
+        active: true,
+        role: Roles.MOTHER,
+        hasDelivered: true,
+      },
+      select: {
+        phone_number: true,
+        id: true,
+      },
+    });
+  }
 
-//   if (condition === 'AGE_35_PLUS') {
-//     ageFilter = { gte: 35 };
-//   } else if (condition === 'MULTIPLE_PREGNANCY') {
-//     gravidityFilter = { gt: 1 };
-//   }
+  // Get all admissions for delivered mothers with their discharges
+  const admissions = await this.prisma.admission.findMany({
+    where: {
+      user: {
+        active: true,
+        role: Roles.MOTHER,
+        hasDelivered: true,
+      },
+    },
+    include: {
+      user: {
+        select: {
+          phone_number: true,
+          id: true,
+        },
+      },
+      DischargeRequest: {
+        include: {
+          Discharge: {
+            orderBy: {
+              createdAt: 'desc',
+            },
+            take: 1,
+          },
+        },
+      },
+    },
+  });
 
-//   const bioDataWithUsers = await this.prisma.bioData.findMany({
-//     where: {
-//       age: ageFilter,
-//       gravidity: gravidityFilter,
-//       user: {
-//         active: true,
-//         role: Roles.MOTHER
-//       }
-//     },
-//     include: {
-//       user: {
-//         select: {
-//           phone_number: true,
-//           id: true
-//         }
-//       }
-//     }
-//   });
+  const now = new Date();
+  const targetMonths = monthsSinceDelivery;
+  
+  // Filter mothers whose most recent discharge is approximately at the target months
+  // We'll use a range of ±0.5 months for matching
+  const filteredMothers = admissions
+    .filter((admission) => {
+      // Find the most recent discharge across all discharge requests
+      let mostRecentDischarge: any = null;
+      let mostRecentDate: Date | null = null;
 
-//   return bioDataWithUsers
-//     .filter(bio => bio.user !== null)
-//     .map(bio => ({
-//       phone_number: bio.user.phone_number,
-//       id: bio.user.id
-//     }));
-// }
+      for (const request of admission.DischargeRequest) {
+        for (const discharge of request.Discharge) {
+          const dischargeDate = new Date(discharge.createdAt);
+          if (!mostRecentDate || dischargeDate > mostRecentDate) {
+            mostRecentDate = dischargeDate;
+            mostRecentDischarge = discharge;
+          }
+        }
+      }
 
+      if (!mostRecentDischarge || !mostRecentDate) {
+        return false;
+      }
+
+      // Calculate months since discharge
+      const monthsDiff = (now.getTime() - mostRecentDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+      
+      // Check if it's within ±0.5 months of the target
+      return Math.abs(monthsDiff - targetMonths) <= 0.5;
+    })
+    .map((admission) => ({
+      phone_number: admission.user.phone_number,
+      id: admission.user.id,
+    }));
+
+  // Remove duplicates (in case a mother has multiple admissions)
+  const uniqueMothers = Array.from(
+    new Map(filteredMothers.map((mother) => [mother.id, mother])).values()
+  );
+
+  return uniqueMothers;
+}
+
+private async getUsersByRiskCondition(condition?: string) {
+  const normalizedCondition = this.normalizeRiskCondition(condition);
+
+  if (!normalizedCondition) {
+    return [];
+  }
+
+  const baseWhere: Prisma.BioDataWhereInput = {
+    user: {
+      active: true,
+      role: Roles.MOTHER,
+    },
+  };
+
+  let where: Prisma.BioDataWhereInput | null = null;
+
+  switch (normalizedCondition) {
+    case 'AGE_35_PLUS':
+      where = {
+        ...baseWhere,
+        age: {
+          gte: 35,
+        },
+      };
+      break;
+    case 'TWIN_TRIPLET_PREGNANCIES':
+    case 'MULTIPLE_PREGNANCY':
+    case 'MULTIPLE_PREGNANCIES':
+      where = {
+        ...baseWhere,
+        gravidity: {
+          gt: 1,
+        },
+      };
+      break;
+    case 'TEENAGE_PREGNANCIES':
+    case 'TEENAGE_PREGNANCY':
+      where = {
+        ...baseWhere,
+        age: {
+          gt: 0,
+          lt: 20,
+        },
+      };
+      break;
+    case 'HIV_REACTIVE':
+    case 'HIV_POSITIVE':
+      where = {
+        ...baseWhere,
+        ClinicVisit: {
+          some: {
+            OR: [
+              {
+                hiv: {
+                  contains: 'reactive',
+                  mode: 'insensitive',
+                },
+              },
+              {
+                hiv: {
+                  contains: 'positive',
+                  mode: 'insensitive',
+                },
+              },
+            ],
+          },
+        },
+      };
+      break;
+    case 'CARDIAC':
+      where = {
+        ...baseWhere,
+        ClinicVisit: {
+          some: {
+            OR: [
+              {
+                treatment: {
+                  contains: 'cardiac',
+                  mode: 'insensitive',
+                },
+              },
+              {
+                notes: {
+                  contains: 'cardiac',
+                  mode: 'insensitive',
+                },
+              },
+              {
+                notes: {
+                  contains: 'heart',
+                  mode: 'insensitive',
+                },
+              },
+            ],
+          },
+        },
+      };
+      break;
+    case 'DIABETES':
+      where = {
+        ...baseWhere,
+        ClinicVisit: {
+          some: {
+            OR: [
+              {
+                treatment: {
+                  contains: 'diab',
+                  mode: 'insensitive',
+                },
+              },
+              {
+                notes: {
+                  contains: 'diab',
+                  mode: 'insensitive',
+                },
+              },
+              {
+                bloodRBS: {
+                  contains: 'high',
+                  mode: 'insensitive',
+                },
+              },
+            ],
+          },
+        },
+      };
+      break;
+    case 'HYPERTENSION':
+      where = {
+        ...baseWhere,
+        ClinicVisit: {
+          some: {
+            OR: [
+              {
+                treatment: {
+                  contains: 'hyper',
+                  mode: 'insensitive',
+                },
+              },
+              {
+                notes: {
+                  contains: 'hyper',
+                  mode: 'insensitive',
+                },
+              },
+              {
+                notes: {
+                  contains: 'preeclamp',
+                  mode: 'insensitive',
+                },
+              },
+            ],
+          },
+        },
+      };
+      break;
+    default:
+      return [];
+  }
+
+  const bioDataWithUsers = await this.prisma.bioData.findMany({
+    where,
+    include: {
+      user: {
+        select: {
+          phone_number: true,
+          id: true,
+        },
+      },
+    },
+  });
+
+  return bioDataWithUsers
+    .filter((bio) => bio.user !== null)
+    .map((bio) => ({
+      phone_number: bio.user.phone_number,
+      id: bio.user.id,
+    }));
+}
+
+private normalizeRiskCondition(condition?: string) {
+  if (!condition) {
+    return '';
+  }
+
+  return condition
+    .replace(/\+/g, ' PLUS ')
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '');
+}
 
 }
 
