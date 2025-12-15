@@ -197,13 +197,14 @@ export class BiodataService {
     return bio;
   }
 
-  async addDelivery({ id, comments, ...rest }: AddDeliveryDto) {
+  async addDelivery({ id, comments, deliveryDate, ...rest }: AddDeliveryDto) {
     const bioData = await this.prisma.bioData.update({
       where: {
         id
       },
 
       data: {
+        deliveryDate: new Date(deliveryDate).toISOString(),
         ...rest,
         comments: {
           push: comments

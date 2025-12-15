@@ -454,6 +454,11 @@ export class ClinicvisitService {
             f_name: true,
             l_name: true,
             phone_number: true,
+            Wallet: {
+              select: {
+                balance: true
+              }
+            }
           }
         }
       }
@@ -465,6 +470,7 @@ export class ClinicvisitService {
         fullName: `${mother.user.f_name} ${mother.user.l_name}`,
         phoneNumber: mother.user.phone_number,
         visitCount: mother._count.ClinicVisit,
+        balance: mother.user.Wallet.balance
       }
     })
 

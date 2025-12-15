@@ -68,6 +68,8 @@ model BioData {
   delivered              Boolean       @default(false)
   deliveryMethod         String?
   comments               String[]
+  undelivered            String?
+  deliveryDate           DateTime?
   age                    Float
   last_monthly_period    DateTime?
   expected_delivery_date DateTime?

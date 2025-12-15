@@ -6,7 +6,7 @@ import { Roles } from '../users/users.service';
 
 @Controller('stats')
 export class StatsController {
-  constructor(private readonly statsService: StatsService) {}
+  constructor(private readonly statsService: StatsService) { }
 
   @UseGuards(RolesGuard)
   @UserRoles(Roles.FACILITY)
@@ -91,4 +91,14 @@ export class StatsController {
   totalEnquiries() {
     return this.statsService.totalMonthlyEnquiries();
   }
+
+
+  @UseGuards(RolesGuard)
+  @UserRoles(Roles.ADMIN)
+  @Get('no-visit-mothers')
+  noVisitMothers() {
+    return this.statsService.mothersWith7kBAl();
+  }
+
+
 }

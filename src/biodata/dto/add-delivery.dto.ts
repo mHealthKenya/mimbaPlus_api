@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { IsBoolean, IsDateString, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class AddDeliveryDto {
 
@@ -17,5 +17,13 @@ export class AddDeliveryDto {
     @IsOptional()
     @IsString()
     comments?: string
+
+    @IsOptional()
+    @IsString()
+    undelivered?: string
+
+    @IsOptional()
+    @IsString()
+    deliveryDate?: string
 
 }

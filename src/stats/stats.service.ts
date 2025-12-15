@@ -11,7 +11,7 @@ export class StatsService {
     private readonly datePicker: DatePicker,
     private readonly prisma: PrismaService,
     private readonly userHelper: UserHelper,
-  ) {}
+  ) { }
 
   async visitsCount() {
     const id = this.userHelper.getUser().id;
@@ -240,5 +240,39 @@ export class StatsService {
     return {
       enquiriesThisMonth: enquiries,
     };
+  }
+
+
+  async mothersWith7kBAl() {
+    const users = await this.prisma.wallet.findMany({
+      where: {
+        balance: 7000
+      },
+
+      include: {
+        user: {
+          select: {
+            f_name: true,
+            l_name: true,
+            phone_number: true,
+            BioData: {
+              select: {
+                _count: {
+                  select: {
+                    ClinicVisit: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    })
+
+    return {
+      count: users.length,
+      users
+    }
+
   }
 }
