@@ -223,29 +223,29 @@ model FollowUp {
 
 model ClinicVisit {
   id                   String             @id @default(cuid())
-  bioDataId            String
-  facilityId           String
-  weight               String
-  hiv                  String             @default("Not tested")
+  bioDataId            String?
+  facilityId           String?
+  weight               String?
+  hiv                  String?             @default("Not tested")
   hivTestDate          DateTime?
   tetanus              String?            @default("Not injected")
   tetanusInjectionDate DateTime?
-  hbLevel              String
-  rhesusFactor         String
-  bloodGroup           String
-  urinalysis           String
-  vdrl                 String
-  bloodRBS             String
-  TB                   String             @default("Not tested")
-  hepatitisB           String             @default("Not tested")
+  hbLevel              String?
+  rhesusFactor         String?
+  bloodGroup           String?
+  urinalysis           String?
+  vdrl                 String?
+  bloodRBS             String?
+  TB                   String?             @default("Not tested")
+  hepatitisB           String?             @default("Not tested")
   notes                String?
   treatment            String?
-  date                 DateTime           @default(now())
-  billed               Boolean            @default(false)
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-  bioData              BioData            @relation(fields: [bioDataId], references: [id])
-  facility             Facility           @relation(fields: [facilityId], references: [id])
+  date                 DateTime?           @default(now())
+  billed               Boolean?            @default(false)
+  createdAt            DateTime?           @default(now())
+  updatedAt            DateTime?           @updatedAt
+  bioData              BioData?            @relation(fields: [bioDataId], references: [id])
+  facility             Facility?           @relation(fields: [facilityId], references: [id])
   WalletCodes          WalletCodes[]
   WalletTransaction    WalletTransaction?
 }
