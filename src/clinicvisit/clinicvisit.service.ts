@@ -440,6 +440,7 @@ export class ClinicvisitService {
       where: {
         user: {
           role: Roles.MOTHER,
+          active: true
         },
       },
       include: {
